@@ -1,6 +1,6 @@
 # Frequency Zen 🧘
 
-A visually stunning, highly interactive web and mobile application serving as a zen platform for playing and mixing binaural beats and experimental frequencies. The app provides deep integration of declassified frequencies from the Gateway Project (Monroe Institute), empowering users with advanced mixing and timing controls, immersive 3D animated visuals that react to audio, and extractable metadata and educational context for every frequency.
+A highly interactive web and mobile application serving as a zen platform for playing and mixing binaural beats and experimental frequencies. The app provides deep integration of declassified frequencies from the Gateway Project (Monroe Institute), empowering users with advanced mixing and timing controls, immersive 3D animated visuals that react to audio, and extractable metadata and educational context for every frequency.
 
 ![Frequency Zen](https://img.shields.io/badge/Platform-Web%20%7C%20Android%20%7C%20iOS-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
