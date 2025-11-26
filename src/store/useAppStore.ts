@@ -92,9 +92,21 @@ export const useAppStore = create<AppState>()(
             return;
           }
 
-          // Ensure audio engine is initialized
+          // Ensure audio engine is initialized and context is running
           if (!audioEngine.isReadyForPlayback()) {
             await audioEngine.initialize();
+          }
+          
+          // Force audio context resume if needed (for Chrome autoplay policy)
+          // This is especially important when playing from modals/overlays
+          try {
+            const Tone = (await import('tone')).default;
+            if (Tone.context.state === 'suspended') {
+              console.log('Resuming audio context for playback...');
+              await Tone.context.resume();
+            }
+          } catch (err) {
+            console.warn('Could not resume audio context:', err);
           }
           
           const id = await audioEngine.playFrequency(frequency, volume, pan);

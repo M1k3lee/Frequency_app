@@ -70,6 +70,48 @@
   font-size: 0.85rem;
 }
 
+.timer-display-chunky {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(100, 50, 150, 0.2);
+  border: 2px solid rgba(100, 50, 150, 0.5);
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-family: 'Orbitron', 'Rajdhani', monospace;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  box-shadow: 0 0 15px rgba(100, 50, 150, 0.3), inset 0 0 10px rgba(100, 50, 150, 0.1);
+  animation: timer-pulse 2s ease-in-out infinite;
+}
+
+.timer-countdown {
+  font-family: 'Orbitron', 'Rajdhani', monospace;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(100, 50, 150, 0.8), 0 0 20px rgba(100, 50, 150, 0.5);
+  letter-spacing: 0.15em;
+  min-width: 80px;
+  text-align: center;
+}
+
+@keyframes timer-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(100, 50, 150, 0.3), inset 0 0 10px rgba(100, 50, 150, 0.1);
+    border-color: rgba(100, 50, 150, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(100, 50, 150, 0.6), inset 0 0 15px rgba(100, 50, 150, 0.2);
+    border-color: rgba(100, 50, 150, 0.8);
+  }
+}
+
+.timer-display-chunky svg {
+  color: rgba(100, 50, 150, 0.9);
+  filter: drop-shadow(0 0 5px rgba(100, 50, 150, 0.8));
+}
+
 .playback-controls {
   display: flex;
   align-items: center;
@@ -117,31 +159,41 @@
   min-width: 35px;
 }
 
-.timer-modal {
+.timer-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  pointer-events: auto;
+}
+
+.timer-modal {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10001;
-  padding: 2rem;
-  overflow-y: auto;
+  padding: 0;
+  overflow: visible;
+  pointer-events: none;
+  max-width: 100vw;
 }
 
 .timer-modal-content {
-  background: rgba(26, 26, 46, 0.95);
+  background: rgba(26, 26, 46, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 2rem;
+  border-radius: 12px 12px 0 0;
+  padding: 1.5rem;
   min-width: 300px;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 500px;
+  width: 100%;
   color: white;
-  margin: auto;
+  margin: 0;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
 }
 
 .timer-modal-content h3 {
@@ -232,9 +284,14 @@
     width: 80px;
   }
 
+  .timer-modal {
+    bottom: 70px;
+  }
+
   .timer-modal-content {
-    margin: 1rem;
-    padding: 1.5rem;
+    max-width: 100%;
+    border-radius: 12px 12px 0 0;
+    padding: 1.25rem;
   }
 }
 

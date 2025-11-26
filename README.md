@@ -78,6 +78,14 @@ npm run build
 
 The built files will be in the `dist/` directory.
 
+### 🌐 GitHub Pages Deployment
+
+This project is automatically deployed to GitHub Pages when you push to the `main` branch.
+
+**Live Site**: https://M1k3lee.github.io/Frequency_app/
+
+For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## 📱 Mobile App Development
 
 ### Android Setup

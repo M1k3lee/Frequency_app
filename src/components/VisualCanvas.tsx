@@ -222,6 +222,11 @@ const VisualCanvas: React.FC = () => {
   // If 'none' is selected, still show starlit-void as the default
   const displayVisual = currentVisual === 'none' ? 'starlit-void' : currentVisual;
 
+  // Debug: Log visual changes
+  React.useEffect(() => {
+    console.log('VisualCanvas: Current visual changed to:', displayVisual);
+  }, [displayVisual]);
+
   const toggleFullscreen = () => {
     if (!isFullscreen) {
       setIsFullscreen(true);
@@ -235,7 +240,14 @@ const VisualCanvas: React.FC = () => {
       <div ref={canvasRef} className={`visual-canvas ${isFullscreen ? 'fullscreen' : ''}`}>
         <Canvas
           camera={{ position: [0, 0, 5], fov: 75 }}
-          gl={{ alpha: true, antialias: true }}
+          gl={{ 
+            alpha: true, 
+            antialias: true,
+            preserveDrawingBuffer: false,
+            powerPreference: 'high-performance'
+          }}
+          dpr={[1, 2]}
+          style={{ width: '100%', height: '100%', display: 'block' }}
         >
           <VisualScene visual={displayVisual} />
         </Canvas>

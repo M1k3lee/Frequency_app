@@ -91,9 +91,10 @@ const PlaybackBar: React.FC = () => {
             {currentFrequencies.size} frequency{currentFrequencies.size !== 1 ? 's' : ''} active
           </span>
           {isTimerActive && playbackTimerRemaining !== null && (
-            <span className="timer-display">
-              <Timer size={14} /> {formatTime(playbackTimerRemaining)}
-            </span>
+            <div className="timer-display-chunky">
+              <Timer size={16} />
+              <span className="timer-countdown">{formatTime(playbackTimerRemaining)}</span>
+            </div>
           )}
         </div>
 
@@ -141,35 +142,41 @@ const PlaybackBar: React.FC = () => {
         </div>
 
         {showTimerModal && (
-          <div className="timer-modal">
-            <div className="timer-modal-content">
-              <h3>Set Timer</h3>
-              <div className="timer-input-group">
-                <input
-                  type="number"
-                  min="1"
-                  max="120"
-                  value={timerMinutes}
-                  onChange={(e) => setTimerMinutes(parseInt(e.target.value) || 30)}
-                  className="timer-input"
-                />
-                <span>minutes</span>
-              </div>
-              <div className="timer-modal-actions">
-                <button onClick={handleSetTimer} className="timer-btn primary">
-                  Set Timer
-                </button>
-                {isTimerActive && (
-                  <button onClick={handleCancelTimer} className="timer-btn secondary">
-                    Cancel Timer
+          <>
+            <div 
+              className="timer-modal-overlay"
+              onClick={() => setShowTimerModal(false)}
+            />
+            <div className="timer-modal">
+              <div className="timer-modal-content">
+                <h3>Set Timer</h3>
+                <div className="timer-input-group">
+                  <input
+                    type="number"
+                    min="1"
+                    max="120"
+                    value={timerMinutes}
+                    onChange={(e) => setTimerMinutes(parseInt(e.target.value) || 30)}
+                    className="timer-input"
+                  />
+                  <span>minutes</span>
+                </div>
+                <div className="timer-modal-actions">
+                  <button onClick={handleSetTimer} className="timer-btn primary">
+                    Set Timer
                   </button>
-                )}
-                <button onClick={() => setShowTimerModal(false)} className="timer-btn">
-                  Close
-                </button>
+                  {isTimerActive && (
+                    <button onClick={handleCancelTimer} className="timer-btn secondary">
+                      Cancel Timer
+                    </button>
+                  )}
+                  <button onClick={() => setShowTimerModal(false)} className="timer-btn">
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

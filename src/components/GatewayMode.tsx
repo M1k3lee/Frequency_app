@@ -3,6 +3,7 @@ import { X, Play, Pause, Info, Volume2, Square } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequenciesByTag, getFrequencyById } from '../data/frequencies';
 import { Frequency } from '../types';
+import { audioEngine } from '../audio/AudioEngine';
 import './GatewayMode.css';
 
 const GatewayMode: React.FC = () => {
@@ -52,6 +53,7 @@ const GatewayMode: React.FC = () => {
     // Prevent event propagation to avoid closing the modal
     if (e) {
       e.stopPropagation();
+      e.preventDefault();
     }
 
     // If already playing, pause it
@@ -68,12 +70,27 @@ const GatewayMode: React.FC = () => {
     stopAll();
     
     // Small delay to ensure cleanup
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise(resolve => setTimeout(resolve, 100));
     
     const freq = gatewayFrequencies.find(f => f.id === freqId);
     if (freq) {
-      await addFrequency(freq);
-      setPlaying(true);
+      try {
+        console.log('Gateway: Attempting to play frequency:', freq.name, freq.frequency, 'Hz');
+        
+        // Ensure audio engine is ready - this will handle context resume
+        if (!audioEngine.isReadyForPlayback()) {
+          await audioEngine.initialize();
+        }
+        
+        // The addFrequency function will handle audio context resume via ensureInitialized
+        // Just call addFrequency - it will handle everything
+        await addFrequency(freq);
+        setPlaying(true);
+        console.log('Gateway: Frequency added successfully');
+      } catch (error) {
+        console.error('Gateway: Error playing frequency:', error);
+        alert('Failed to play frequency. Please try again. Error: ' + (error instanceof Error ? error.message : String(error)));
+      }
     }
   };
 
@@ -86,51 +103,8 @@ const GatewayMode: React.FC = () => {
             <X size={24} />
           </button>
         </div>
-        
-        <div className="gateway-intro">
-          <p>Explore the declassified frequencies from the Monroe Institute's Gateway Project. These experimental frequencies were used in consciousness exploration research.</p>
-        </div>
 
-        <div className="gateway-frequencies">
-          {gatewayFrequencies.map((freq) => (
-            <div key={freq.id} className="gateway-frequency-card">
-              <div className="gateway-freq-header">
-                <div>
-                  <h3>{freq.name}</h3>
-                  <span className="gateway-badge">Gateway Project</span>
-                </div>
-                <div className="gateway-card-actions">
-                  {freq.experimentalData && (
-                    <button
-                      className="info-gateway-btn"
-                      onClick={() => setSelectedFreq(freq)}
-                      aria-label={`View experimental data for ${freq.name}`}
-                      title="View Experimental Data"
-                    >
-                      <Info size={18} />
-                    </button>
-                  )}
-                  <button
-                    className={`play-gateway-btn ${isFrequencyPlaying(freq.id) ? 'playing' : ''}`}
-                    onClick={(e) => handlePlayFrequency(freq.id, e)}
-                    aria-label={isFrequencyPlaying(freq.id) ? `Pause ${freq.name}` : `Play ${freq.name}`}
-                  >
-                    {isFrequencyPlaying(freq.id) ? <Pause size={18} /> : <Play size={18} />}
-                  </button>
-                </div>
-              </div>
-              <div className="gateway-freq-info">
-                <span className="freq-value">{freq.frequency} Hz</span>
-                <p>{freq.description}</p>
-                {freq.gatewayReference && (
-                  <span className="gateway-ref">{freq.gatewayReference}</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Gateway Control Bar */}
+        {/* Gateway Control Bar - Moved to top */}
         {currentPlayingFreq && (
           <div className="gateway-control-bar">
             <div className="gateway-control-info">
@@ -190,6 +164,49 @@ const GatewayMode: React.FC = () => {
             </div>
           </div>
         )}
+        
+        <div className="gateway-intro">
+          <p>Explore the declassified frequencies from the Monroe Institute's Gateway Project. These experimental frequencies were used in consciousness exploration research.</p>
+        </div>
+
+        <div className="gateway-frequencies">
+          {gatewayFrequencies.map((freq) => (
+            <div key={freq.id} className="gateway-frequency-card">
+              <div className="gateway-freq-header">
+                <div>
+                  <h3>{freq.name}</h3>
+                  <span className="gateway-badge">Gateway Project</span>
+                </div>
+                <div className="gateway-card-actions">
+                  {freq.experimentalData && (
+                    <button
+                      className="info-gateway-btn"
+                      onClick={() => setSelectedFreq(freq)}
+                      aria-label={`View experimental data for ${freq.name}`}
+                      title="View Experimental Data"
+                    >
+                      <Info size={18} />
+                    </button>
+                  )}
+                  <button
+                    className={`play-gateway-btn ${isFrequencyPlaying(freq.id) ? 'playing' : ''}`}
+                    onClick={(e) => handlePlayFrequency(freq.id, e)}
+                    aria-label={isFrequencyPlaying(freq.id) ? `Pause ${freq.name}` : `Play ${freq.name}`}
+                  >
+                    {isFrequencyPlaying(freq.id) ? <Pause size={18} /> : <Play size={18} />}
+                  </button>
+                </div>
+              </div>
+              <div className="gateway-freq-info">
+                <span className="freq-value">{freq.frequency} Hz</span>
+                <p>{freq.description}</p>
+                {freq.gatewayReference && (
+                  <span className="gateway-ref">{freq.gatewayReference}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Experimental Data Modal */}
         {selectedFreq && selectedFreq.experimentalData && (

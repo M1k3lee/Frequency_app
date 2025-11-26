@@ -108,7 +108,21 @@ class AudioEngine {
   }
 
   async playFrequency(frequency: Frequency, volume: number = 0.7, pan: number = 0): Promise<string> {
+    // Ensure audio context is running - critical for Chrome autoplay policy
     await this.ensureInitialized();
+    
+    // Double-check context state and resume if needed
+    // This is especially important when playing from modals/overlays
+    if (Tone.context.state === 'suspended') {
+      console.log('Audio context suspended, attempting resume...');
+      try {
+        await Tone.context.resume();
+        console.log('Audio context resumed successfully');
+      } catch (error) {
+        console.error('Failed to resume audio context:', error);
+        throw new Error('Audio context could not be resumed. User interaction required.');
+      }
+    }
 
     const id = `${frequency.id}-${Date.now()}`;
     
