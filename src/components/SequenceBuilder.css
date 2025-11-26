@@ -1,0 +1,319 @@
+.sequence-builder-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.sequence-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sequence-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.toggle-builder-btn {
+  padding: 0.5rem 1rem;
+  background: rgba(100, 50, 150, 0.6);
+  border: 1px solid rgba(100, 50, 150, 0.8);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-builder-btn:hover {
+  background: rgba(100, 50, 150, 1);
+}
+
+.sequence-builder {
+  margin-top: 1.5rem;
+}
+
+.builder-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.sequence-name-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+.fade-duration-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.fade-duration-input {
+  width: 60px;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+}
+
+.sequence-steps {
+  margin-bottom: 1.5rem;
+}
+
+.sequence-steps h4 {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.empty-steps {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
+
+.sequence-step {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.step-number {
+  background: rgba(100, 50, 150, 0.6);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.step-frequency-select {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+}
+
+.step-duration-label,
+.step-volume-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 0.85rem;
+}
+
+.step-duration-input {
+  width: 60px;
+  padding: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+}
+
+.step-volume-input {
+  width: 100px;
+}
+
+.remove-step-btn {
+  background: rgba(200, 50, 50, 0.6);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-step-btn:hover {
+  background: rgba(200, 50, 50, 1);
+}
+
+.add-step-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(100, 50, 150, 0.6);
+  border: 1px solid rgba(100, 50, 150, 0.8);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.add-step-btn:hover {
+  background: rgba(100, 50, 150, 1);
+}
+
+.builder-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.save-sequence-btn,
+.cancel-builder-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.save-sequence-btn {
+  background: rgba(50, 200, 100, 0.6);
+  color: white;
+}
+
+.save-sequence-btn:hover {
+  background: rgba(50, 200, 100, 1);
+}
+
+.cancel-builder-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.cancel-builder-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.saved-sequences {
+  margin-top: 2rem;
+}
+
+.saved-sequences h4 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.sequences-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sequence-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.sequence-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sequence-info strong {
+  color: white;
+  font-size: 1rem;
+}
+
+.sequence-info span {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.playing-badge {
+  background: rgba(50, 200, 100, 0.6);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sequence-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.play-sequence-btn,
+.stop-sequence-btn,
+.delete-sequence-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  border: none;
+  font-size: 0.85rem;
+}
+
+.play-sequence-btn {
+  background: rgba(100, 50, 150, 0.6);
+  color: white;
+}
+
+.play-sequence-btn:hover:not(:disabled) {
+  background: rgba(100, 50, 150, 1);
+}
+
+.play-sequence-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stop-sequence-btn {
+  background: rgba(200, 50, 50, 0.6);
+  color: white;
+}
+
+.stop-sequence-btn:hover {
+  background: rgba(200, 50, 50, 1);
+}
+
+.delete-sequence-btn {
+  background: rgba(200, 50, 50, 0.6);
+  color: white;
+}
+
+.delete-sequence-btn:hover {
+  background: rgba(200, 50, 50, 1);
+}
+

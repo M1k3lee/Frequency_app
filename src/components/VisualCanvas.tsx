@@ -176,16 +176,14 @@ const BreathingOrb: React.FC = () => {
   );
 };
 
-const VisualScene: React.FC = () => {
-  const { currentVisual } = useAppStore();
-
+const VisualScene: React.FC<{ visual: string }> = ({ visual }) => {
   return (
     <>
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 10]} intensity={1} />
       <pointLight position={[-10, -10, -10]} intensity={0.5} color="#4a90e2" />
       
-      {currentVisual === 'starlit-void' && (
+      {visual === 'starlit-void' && (
         <Stars
           radius={300}
           depth={50}
@@ -197,19 +195,19 @@ const VisualScene: React.FC = () => {
         />
       )}
       
-      {currentVisual === 'flowing-energy' && <FlowingEnergy />}
+      {visual === 'flowing-energy' && <FlowingEnergy />}
       
-      {currentVisual === 'mandala' && <Mandala />}
+      {visual === 'mandala' && <Mandala />}
       
-      {currentVisual === 'gateway-portal' && <GatewayPortal />}
+      {visual === 'gateway-portal' && <GatewayPortal />}
       
-      {currentVisual === 'breathing-orb' && <BreathingOrb />}
+      {visual === 'breathing-orb' && <BreathingOrb />}
       
       <OrbitControls
         enableZoom={false}
         enablePan={false}
         autoRotate
-        autoRotateSpeed={currentVisual === 'starlit-void' ? 0.5 : 0.3}
+        autoRotateSpeed={visual === 'starlit-void' ? 0.5 : 0.3}
       />
     </>
   );
@@ -220,9 +218,9 @@ const VisualCanvas: React.FC = () => {
   const { currentVisual } = useAppStore();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  if (currentVisual === 'none') {
-    return null;
-  }
+  // Always show the visual canvas - starlit-void is the default background
+  // If 'none' is selected, still show starlit-void as the default
+  const displayVisual = currentVisual === 'none' ? 'starlit-void' : currentVisual;
 
   const toggleFullscreen = () => {
     if (!isFullscreen) {
@@ -239,7 +237,7 @@ const VisualCanvas: React.FC = () => {
           camera={{ position: [0, 0, 5], fov: 75 }}
           gl={{ alpha: true, antialias: true }}
         >
-          <VisualScene />
+          <VisualScene visual={displayVisual} />
         </Canvas>
         {isFullscreen && (
           <button

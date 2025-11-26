@@ -24,6 +24,58 @@
   margin-bottom: 2rem;
 }
 
+.play-control-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.current-frequency-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.5rem 1rem;
+  background: rgba(100, 50, 150, 0.2);
+  border: 1px solid rgba(100, 50, 150, 0.4);
+  border-radius: 12px;
+  min-width: 200px;
+}
+
+.current-freq-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.current-freq-name strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.current-freq-value {
+  font-size: 0.85rem;
+  color: rgba(100, 200, 255, 0.9);
+  font-weight: 500;
+}
+
+.current-freq-effects {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.effects-label {
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.effects-list {
+  color: rgba(255, 255, 255, 0.9);
+}
+
 .play-button {
   width: 56px;
   height: 56px;

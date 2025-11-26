@@ -48,17 +48,23 @@ const FrequencyLibrary: React.FC = () => {
   };
 
   const handlePlayFrequency = async (frequency: Frequency) => {
-    // If already playing, pause it
+    // If already playing, stop it
     if (isFrequencyPlaying(frequency.id)) {
       const activeId = getActiveFrequencyId(frequency.id);
       if (activeId) {
         removeFrequency(activeId);
+        setPlaying(false);
       }
       return;
     }
     
-    // Otherwise, stop all and play this one
+    // Prevent duplicate playback - stop all first
     stopAll();
+    
+    // Small delay to ensure cleanup
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    // Then play the selected frequency
     await addFrequency(frequency);
     setPlaying(true);
   };

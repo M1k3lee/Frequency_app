@@ -49,3 +49,16 @@ export interface Playlist {
 
 export type VisualPreset = 'starlit-void' | 'flowing-energy' | 'mandala' | 'gateway-portal' | 'breathing-orb' | 'none';
 
+export interface FrequencySequence {
+  id: string;
+  name: string;
+  steps: Array<{
+    frequencyId: string;
+    duration: number; // in minutes
+    volume?: number;
+    pan?: number;
+  }>;
+  fadeDuration?: number; // in seconds, for transitions between steps
+  createdAt: number;
+}
+

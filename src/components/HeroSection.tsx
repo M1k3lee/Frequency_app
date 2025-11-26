@@ -9,6 +9,7 @@ const HeroSection: React.FC = () => {
     isPlaying,
     masterVolume,
     currentVisual,
+    currentFrequencies,
     setPlaying,
     setMasterVolume,
     stopAll,
@@ -21,6 +22,18 @@ const HeroSection: React.FC = () => {
 
   const [selectedFreq, setSelectedFreq] = useState('');
   const [showVisuals, setShowVisuals] = useState(true);
+
+  // Get currently playing frequency
+  const getCurrentPlayingFrequency = (): Frequency | null => {
+    if (currentFrequencies.size === 0) return null;
+    const activeFreq = Array.from(currentFrequencies.values())[0];
+    if (activeFreq && activeFreq.enabled) {
+      return getFrequencyById(activeFreq.frequencyId);
+    }
+    return null;
+  };
+
+  const currentPlayingFreq = getCurrentPlayingFrequency();
 
   const modes = [
     { id: 'focus', label: 'Focus', icon: Brain, freqId: 'beta-15' },
@@ -38,13 +51,20 @@ const HeroSection: React.FC = () => {
   ];
 
   const handlePlayPause = async () => {
-    if (isPlaying) {
+    // Master control - pause/resume whatever is currently playing
+    if (isPlaying && currentFrequencies.size > 0) {
+      // Pause all currently playing frequencies
       stopAll();
       setPlaying(false);
+    } else if (currentFrequencies.size > 0) {
+      // Resume if there are frequencies but not playing
+      // This shouldn't normally happen, but handle it
+      setPlaying(true);
     } else {
-      // Start with default alpha frequency
+      // Nothing playing - start with default alpha frequency
       const defaultFreq = getFrequencyById('alpha-10');
       if (defaultFreq) {
+        stopAll(); // Ensure clean state
         await addFrequency(defaultFreq);
         setPlaying(true);
       }
@@ -73,7 +93,12 @@ const HeroSection: React.FC = () => {
 
   const toggleVisuals = () => {
     setShowVisuals(!showVisuals);
-    setCurrentVisual(!showVisuals ? 'starlit-void' : 'none');
+    // Don't set to 'none' - always keep a visual as background
+    // If hiding, just keep current visual but user can still see it
+    if (!showVisuals) {
+      setCurrentVisual('starlit-void');
+    }
+    // If showing, keep current visual
   };
 
   return (
@@ -81,13 +106,34 @@ const HeroSection: React.FC = () => {
       <div className="hero-card">
         {/* Playback and Volume Controls */}
         <div className="playback-controls">
-          <button
-            className={`play-button ${isPlaying ? 'playing' : ''}`}
-            onClick={handlePlayPause}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-          >
-            {isPlaying ? <Pause size={24} /> : <Play size={24} />}
-          </button>
+          <div className="play-control-group">
+            <button
+              className={`play-button ${isPlaying ? 'playing' : ''}`}
+              onClick={handlePlayPause}
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <Pause size={24} /> : <Play size={24} />}
+            </button>
+            
+            {/* Current Playing Frequency Info */}
+            {currentPlayingFreq && (
+              <div className="current-frequency-info">
+                <div className="current-freq-name">
+                  <strong>{currentPlayingFreq.name}</strong>
+                  <span className="current-freq-value">{currentPlayingFreq.frequency} Hz</span>
+                </div>
+                {currentPlayingFreq.effects && currentPlayingFreq.effects.length > 0 && (
+                  <div className="current-freq-effects">
+                    <span className="effects-label">Effects:</span>
+                    <span className="effects-list">
+                      {currentPlayingFreq.effects.slice(0, 3).join(', ')}
+                      {currentPlayingFreq.effects.length > 3 && '...'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           
           <div className="volume-control">
             <Volume2 size={18} />

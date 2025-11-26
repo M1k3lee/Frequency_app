@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Settings, Plus, X, Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Settings, Plus, X, Save, FolderOpen, Trash2, Clock } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { frequencies } from '../data/frequencies';
+import SequenceBuilder from './SequenceBuilder';
 import './AdvancedPanel.css';
 
 const AdvancedPanel: React.FC = () => {
@@ -16,10 +17,15 @@ const AdvancedPanel: React.FC = () => {
     savedMixes,
     loadMix,
     removeMix,
-    masterVolume
+    masterVolume,
+    setShowAdvanced,
+    setPlaybackTimer,
+    setPlaybackTimerRemaining,
+    setIsTimerActive
   } = useAppStore();
 
   const [selectedFreq, setSelectedFreq] = useState('');
+  const [playDuration, setPlayDuration] = useState<number | null>(null); // in minutes, null = no limit
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [mixName, setMixName] = useState('');
@@ -29,6 +35,22 @@ const AdvancedPanel: React.FC = () => {
     if (freq) {
       await addFrequency(freq);
       setPlaying(true);
+      
+      // If duration is set, schedule auto-stop
+      if (playDuration && playDuration > 0) {
+        const durationSeconds = playDuration * 60;
+        setPlaybackTimer(durationSeconds);
+        setPlaybackTimerRemaining(durationSeconds);
+        setIsTimerActive(true);
+        
+        setTimeout(() => {
+          stopAll();
+          setPlaybackTimer(null);
+          setPlaybackTimerRemaining(null);
+          setIsTimerActive(false);
+        }, durationSeconds * 1000);
+      }
+      
       setTimeout(() => {
         const playbackBar = document.querySelector('.playback-bar');
         if (playbackBar) {
@@ -72,6 +94,14 @@ const AdvancedPanel: React.FC = () => {
     <div className="advanced-panel">
       <div className="advanced-header">
         <h2><Settings size={20} /> Advanced Mixing</h2>
+        <button
+          className="close-advanced-btn"
+          onClick={() => setShowAdvanced(false)}
+          aria-label="Close Advanced Panel"
+          title="Return to main page"
+        >
+          <X size={24} />
+        </button>
       </div>
 
       <div className="add-frequency-section">
@@ -89,6 +119,20 @@ const AdvancedPanel: React.FC = () => {
               </option>
             ))}
           </select>
+          <label className="duration-label">
+            <Clock size={14} />
+            Play for (min):
+            <input
+              type="number"
+              min="0"
+              max="120"
+              placeholder="∞"
+              value={playDuration || ''}
+              onChange={(e) => setPlayDuration(e.target.value ? parseInt(e.target.value) || null : null)}
+              className="duration-input"
+            />
+            <span className="duration-hint">(0 = no limit)</span>
+          </label>
           <button
             className="add-btn"
             onClick={handleAddFrequency}
@@ -98,6 +142,8 @@ const AdvancedPanel: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <SequenceBuilder />
 
       <div className="active-mix-section">
         <h3>Active Mix ({currentFrequencies.size})</h3>

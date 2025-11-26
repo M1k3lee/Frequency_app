@@ -1,15 +1,75 @@
-import React from 'react';
-import { X, Play } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Play, Pause, Info, Volume2, Square } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequenciesByTag, getFrequencyById } from '../data/frequencies';
+import { Frequency } from '../types';
 import './GatewayMode.css';
 
 const GatewayMode: React.FC = () => {
-  const { setShowGateway, addFrequency, stopAll, setPlaying } = useAppStore();
+  const { 
+    setShowGateway, 
+    addFrequency, 
+    stopAll, 
+    setPlaying,
+    currentFrequencies,
+    isPlaying,
+    removeFrequency,
+    masterVolume,
+    setMasterVolume
+  } = useAppStore();
   const gatewayFrequencies = getFrequenciesByTag('gateway');
+  const [selectedFreq, setSelectedFreq] = useState<Frequency | null>(null);
 
-  const handlePlayFrequency = async (freqId: string) => {
+  // Check if a frequency is currently playing
+  const isFrequencyPlaying = (frequencyId: string): boolean => {
+    return Array.from(currentFrequencies.values()).some(
+      (f) => f.frequencyId === frequencyId && f.enabled
+    );
+  };
+
+  // Get the active frequency ID for a given frequency
+  const getActiveFrequencyId = (frequencyId: string): string | null => {
+    const active = Array.from(currentFrequencies.values()).find(
+      (f) => f.frequencyId === frequencyId && f.enabled
+    );
+    return active ? active.id : null;
+  };
+
+  // Get currently playing Gateway frequency
+  const getCurrentPlayingFrequency = (): Frequency | null => {
+    if (currentFrequencies.size === 0) return null;
+    const activeFreq = Array.from(currentFrequencies.values())[0];
+    if (activeFreq && activeFreq.enabled) {
+      const freq = gatewayFrequencies.find(f => f.id === activeFreq.frequencyId);
+      return freq || null;
+    }
+    return null;
+  };
+
+  const currentPlayingFreq = getCurrentPlayingFrequency();
+
+  const handlePlayFrequency = async (freqId: string, e?: React.MouseEvent) => {
+    // Prevent event propagation to avoid closing the modal
+    if (e) {
+      e.stopPropagation();
+    }
+
+    // If already playing, pause it
+    if (isFrequencyPlaying(freqId)) {
+      const activeId = getActiveFrequencyId(freqId);
+      if (activeId) {
+        removeFrequency(activeId);
+        setPlaying(false);
+      }
+      return;
+    }
+
+    // Stop all and play this one
     stopAll();
+    
+    // Small delay to ensure cleanup
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     const freq = gatewayFrequencies.find(f => f.id === freqId);
     if (freq) {
       await addFrequency(freq);
@@ -39,13 +99,25 @@ const GatewayMode: React.FC = () => {
                   <h3>{freq.name}</h3>
                   <span className="gateway-badge">Gateway Project</span>
                 </div>
-                <button
-                  className="play-gateway-btn"
-                  onClick={() => handlePlayFrequency(freq.id)}
-                  aria-label={`Play ${freq.name}`}
-                >
-                  <Play size={18} />
-                </button>
+                <div className="gateway-card-actions">
+                  {freq.experimentalData && (
+                    <button
+                      className="info-gateway-btn"
+                      onClick={() => setSelectedFreq(freq)}
+                      aria-label={`View experimental data for ${freq.name}`}
+                      title="View Experimental Data"
+                    >
+                      <Info size={18} />
+                    </button>
+                  )}
+                  <button
+                    className={`play-gateway-btn ${isFrequencyPlaying(freq.id) ? 'playing' : ''}`}
+                    onClick={(e) => handlePlayFrequency(freq.id, e)}
+                    aria-label={isFrequencyPlaying(freq.id) ? `Pause ${freq.name}` : `Play ${freq.name}`}
+                  >
+                    {isFrequencyPlaying(freq.id) ? <Pause size={18} /> : <Play size={18} />}
+                  </button>
+                </div>
               </div>
               <div className="gateway-freq-info">
                 <span className="freq-value">{freq.frequency} Hz</span>
@@ -57,6 +129,130 @@ const GatewayMode: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Gateway Control Bar */}
+        {currentPlayingFreq && (
+          <div className="gateway-control-bar">
+            <div className="gateway-control-info">
+              <div className="gateway-now-playing">
+                <span className="now-playing-label">Now Playing:</span>
+                <strong>{currentPlayingFreq.name}</strong>
+                <span className="now-playing-freq">{currentPlayingFreq.frequency} Hz</span>
+              </div>
+            </div>
+            <div className="gateway-control-actions">
+              <div className="gateway-volume-control">
+                <Volume2 size={16} />
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={masterVolume}
+                  onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+                  className="gateway-volume-slider"
+                />
+                <span className="gateway-volume-value">{Math.round(masterVolume * 100)}%</span>
+              </div>
+              <button
+                className="gateway-pause-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isPlaying) {
+                    stopAll();
+                    setPlaying(false);
+                  } else {
+                    const activeFreq = Array.from(currentFrequencies.values())[0];
+                    if (activeFreq) {
+                      const freq = getFrequencyById(activeFreq.frequencyId);
+                      if (freq) {
+                        addFrequency(freq);
+                        setPlaying(true);
+                      }
+                    }
+                  }
+                }}
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+              >
+                {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+              </button>
+              <button
+                className="gateway-stop-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  stopAll();
+                  setPlaying(false);
+                }}
+                aria-label="Stop"
+              >
+                <Square size={18} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Experimental Data Modal */}
+        {selectedFreq && selectedFreq.experimentalData && (
+          <div className="experimental-modal-overlay" onClick={() => setSelectedFreq(null)}>
+            <div className="experimental-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="experimental-modal-header">
+                <h3>{selectedFreq.name} - Experimental Data</h3>
+                <button
+                  className="close-experimental-btn"
+                  onClick={() => setSelectedFreq(null)}
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="experimental-data-content">
+                {selectedFreq.experimentalData.methodology && (
+                  <div className="data-section">
+                    <h4>Methodology</h4>
+                    <p>{selectedFreq.experimentalData.methodology}</p>
+                  </div>
+                )}
+                
+                {selectedFreq.experimentalData.testSubjects && (
+                  <div className="data-section">
+                    <h4>Test Subjects</h4>
+                    <p>{selectedFreq.experimentalData.testSubjects}</p>
+                  </div>
+                )}
+                
+                {selectedFreq.experimentalData.reactions && selectedFreq.experimentalData.reactions.length > 0 && (
+                  <div className="data-section">
+                    <h4>Subject Reactions</h4>
+                    <ul>
+                      {selectedFreq.experimentalData.reactions.map((reaction, i) => (
+                        <li key={i}>{reaction}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {selectedFreq.experimentalData.outcomes && selectedFreq.experimentalData.outcomes.length > 0 && (
+                  <div className="data-section">
+                    <h4>Experimental Outcomes</h4>
+                    <ul>
+                      {selectedFreq.experimentalData.outcomes.map((outcome, i) => (
+                        <li key={i}>{outcome}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {selectedFreq.experimentalData.notes && (
+                  <div className="data-section notes">
+                    <h4>Research Notes</h4>
+                    <p>{selectedFreq.experimentalData.notes}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

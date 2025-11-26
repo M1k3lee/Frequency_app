@@ -105,6 +105,12 @@
   margin-bottom: 1rem;
 }
 
+.gateway-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .gateway-freq-header h3 {
   color: white;
   font-size: 1.1rem;
@@ -120,6 +126,26 @@
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.info-gateway-btn {
+  background: rgba(50, 150, 200, 0.6);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.info-gateway-btn:hover {
+  background: rgba(50, 150, 200, 1);
+  transform: scale(1.1);
 }
 
 .play-gateway-btn {
@@ -140,6 +166,24 @@
 .play-gateway-btn:hover {
   background: rgba(100, 50, 150, 1);
   transform: scale(1.1);
+}
+
+.play-gateway-btn.playing {
+  background: rgba(50, 200, 100, 0.8);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.play-gateway-btn.playing:hover {
+  background: rgba(50, 200, 100, 1);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(50, 200, 100, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(50, 200, 100, 0);
+  }
 }
 
 .gateway-freq-info {
@@ -167,6 +211,244 @@
   font-style: italic;
 }
 
+/* Experimental Data Modal */
+.experimental-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.experimental-modal-content {
+  background: rgba(26, 26, 46, 0.98);
+  border: 2px solid rgba(100, 50, 150, 0.6);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: white;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
+}
+
+.experimental-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.experimental-modal-header h3 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 300;
+  margin: 0;
+  background: linear-gradient(135deg, rgba(100, 50, 150, 1), rgba(50, 150, 200, 1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.close-experimental-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.close-experimental-btn:hover {
+  background: rgba(200, 50, 50, 0.6);
+  border-color: rgba(200, 50, 50, 0.8);
+}
+
+.experimental-data-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.data-section {
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 3px solid rgba(100, 50, 150, 0.6);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+}
+
+.data-section h4 {
+  color: rgba(100, 200, 255, 1);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.data-section p {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.data-section ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.8;
+}
+
+.data-section li {
+  margin-bottom: 0.5rem;
+}
+
+.data-section.notes {
+  background: rgba(100, 50, 150, 0.1);
+  border-left-color: rgba(100, 50, 150, 0.8);
+}
+
+.data-section.notes p {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Gateway Control Bar */
+.gateway-control-bar {
+  position: sticky;
+  bottom: 0;
+  background: rgba(26, 26, 46, 0.98);
+  border-top: 2px solid rgba(100, 50, 150, 0.6);
+  border-radius: 12px 12px 0 0;
+  padding: 1rem 1.5rem;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  z-index: 10;
+}
+
+.gateway-control-info {
+  flex: 1;
+}
+
+.gateway-now-playing {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.now-playing-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+}
+
+.gateway-now-playing strong {
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.now-playing-freq {
+  color: rgba(100, 200, 255, 0.9);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.gateway-control-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.gateway-volume-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+}
+
+.gateway-volume-slider {
+  width: 100px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.gateway-volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: rgba(100, 50, 150, 1);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.gateway-volume-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: rgba(100, 50, 150, 1);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.gateway-volume-value {
+  min-width: 40px;
+  text-align: right;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.gateway-pause-btn,
+.gateway-stop-btn {
+  background: rgba(100, 50, 150, 0.6);
+  border: 1px solid rgba(100, 50, 150, 0.8);
+  border-radius: 8px;
+  color: white;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gateway-pause-btn:hover {
+  background: rgba(100, 50, 150, 1);
+  transform: scale(1.1);
+}
+
+.gateway-stop-btn {
+  background: rgba(200, 50, 50, 0.6);
+  border-color: rgba(200, 50, 50, 0.8);
+}
+
+.gateway-stop-btn:hover {
+  background: rgba(200, 50, 50, 1);
+  transform: scale(1.1);
+}
+
 @media (max-width: 768px) {
   .gateway-mode-overlay {
     padding: 1rem;
@@ -178,6 +460,25 @@
 
   .gateway-frequencies {
     grid-template-columns: 1fr;
+  }
+
+  .experimental-modal-overlay {
+    padding: 1rem;
+  }
+
+  .experimental-modal-content {
+    padding: 1.5rem;
+  }
+
+  .gateway-control-bar {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .gateway-control-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 

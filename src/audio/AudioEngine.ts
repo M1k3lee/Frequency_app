@@ -17,11 +17,25 @@ class AudioEngine {
   private isReady: boolean = false;
 
   constructor() {
+    // According to Chrome autoplay policy, we should create AudioContext only after user gesture
+    // But we can create the Volume node now - it will connect when context is running
     // Start with 0dB (full volume) - will be adjusted by setMasterVolume
     this.masterVolume = new Tone.Volume(0).toDestination();
     console.log('AudioEngine: Master volume node created');
     console.log('Master volume connected to destination:', this.masterVolume.volume.value, 'dB');
     console.log('Tone.js context state:', Tone.context.state);
+    
+    // Verify connection
+    try {
+      const destination = Tone.getDestination();
+      console.log('Tone.js destination available:', destination ? 'Yes' : 'No');
+      if (destination) {
+        console.log('Destination number of inputs:', destination.numberOfInputs);
+        console.log('Destination context state:', destination.context.state);
+      }
+    } catch (e) {
+      console.error('Error accessing destination:', e);
+    }
   }
 
   async initialize(): Promise<void> {
@@ -39,16 +53,47 @@ class AudioEngine {
   }
 
   async ensureInitialized(): Promise<void> {
-    if (Tone.context.state !== 'running') {
-      await Tone.start();
-      console.log('Audio context started, state:', Tone.context.state);
+    // According to Chrome autoplay policy (https://developer.chrome.com/blog/autoplay/#web_audio):
+    // - AudioContext created before user gesture will be in "suspended" state
+    // - Must call resume() after user gesture
+    // - Or create AudioContext only when user interacts
+    
+    const currentState = Tone.context.state;
+    console.log('Audio context current state:', currentState);
+    
+    if (currentState === 'suspended') {
+      console.log('Audio context is suspended, resuming...');
+      try {
+        await Tone.context.resume();
+        console.log('Audio context resumed, new state:', Tone.context.state);
+      } catch (error) {
+        console.error('Failed to resume audio context:', error);
+        throw error;
+      }
+    } else if (currentState !== 'running') {
+      // If not running and not suspended, try to start
+      console.log('Audio context not running, attempting to start...');
+      try {
+        await Tone.start();
+        console.log('Audio context started, state:', Tone.context.state);
+      } catch (error) {
+        console.error('Failed to start audio context:', error);
+        throw error;
+      }
     } else {
       console.log('Audio context already running');
     }
     
+    // Verify context is actually running
+    if (Tone.context.state !== 'running') {
+      const errorMsg = `Audio context could not be started. Current state: ${Tone.context.state}. User interaction required.`;
+      console.error('ERROR:', errorMsg);
+      throw new Error(errorMsg);
+    }
+    
     if (!this.context) {
       this.context = Tone.context;
-      console.log('Audio context stored');
+      console.log('Audio context stored, state:', this.context.state);
     }
 
     // Request wake lock for mobile
@@ -78,12 +123,13 @@ class AudioEngine {
         const modulationFreq = frequency.frequency;
         const modulationDepth = 50; // Modulate by ±50Hz for audible effect
         
-        // Create carrier oscillator
+        // Create carrier oscillator at base frequency
         const carrier = new Tone.Oscillator(carrierFreq, 'sine');
         
-        // Create LFO for frequency modulation with proper depth
-        // LFO output range: -1 to 1, scale to -modulationDepth to +modulationDepth
+        // Create LFO for frequency modulation
+        // Tone.js LFO: frequency, min, max
         const lfo = new Tone.LFO(modulationFreq, -modulationDepth, modulationDepth);
+        // Connect LFO to modulate the carrier's frequency parameter
         lfo.connect(carrier.frequency);
         lfo.start();
         
@@ -96,12 +142,28 @@ class AudioEngine {
         gain.connect(panNode);
         panNode.connect(this.masterVolume);
         
-        // Start carrier after a small delay to ensure everything is connected
+        // Verify context is running before starting
+        if (Tone.context.state !== 'running') {
+          console.error('Cannot start carrier: Audio context not running!');
+          throw new Error('Audio context must be running to play audio');
+        }
+        
+        // Start carrier
         carrier.start();
         
+        // Verify it actually started
+        setTimeout(() => {
+          if (carrier.state !== 'started') {
+            console.error('Carrier oscillator failed to start! State:', carrier.state);
+          }
+        }, 100);
+        
+        // Verify connection chain
         console.log('Playing carrier frequency:', carrierFreq, 'Hz modulated by', modulationFreq, 'Hz (±', modulationDepth, 'Hz) at volume', adjustedVolume);
         console.log('Carrier state:', carrier.state, 'LFO state:', lfo.state, 'Gain value:', gain.gain.value);
         console.log('Master volume dB:', this.masterVolume.volume.value);
+        console.log('Carrier frequency value:', carrier.frequency.value);
+        console.log('Connection chain: carrier -> gain -> pan -> masterVolume -> destination');
         
         this.activeOscillators.set(id, {
           left: carrier as any,
@@ -113,13 +175,12 @@ class AudioEngine {
         });
       } else {
         // Standard binaural beat generation
-        // Use a carrier frequency in the audible range (200Hz) and modulate it
-        // to create the binaural beat effect
-        const beatFreq = frequency.frequency; // The desired beat frequency
+        // Use a carrier frequency in the audible range and create binaural beat
+        const beatFreq = frequency.frequency; // The desired beat frequency (Hz)
         const carrierFreq = 200; // Base frequency in audible range
         
         // Create binaural beat: left and right differ by beatFreq
-        // This creates the perception of the beat frequency
+        // This creates the perception of the beat frequency in the brain
         const leftFreq = carrierFreq - beatFreq / 2;
         const rightFreq = carrierFreq + beatFreq / 2;
         
@@ -127,6 +188,7 @@ class AudioEngine {
         const safeLeftFreq = Math.max(20, Math.min(20000, leftFreq));
         const safeRightFreq = Math.max(20, Math.min(20000, rightFreq));
         
+        // Create oscillators
         const leftOsc = new Tone.Oscillator(safeLeftFreq, 'sine');
         const rightOsc = new Tone.Oscillator(safeRightFreq, 'sine');
         
@@ -134,11 +196,11 @@ class AudioEngine {
         const leftGain = new Tone.Gain(adjustedVolume);
         const rightGain = new Tone.Gain(adjustedVolume);
         
-        // Create panners
+        // Create panners for stereo positioning
         const leftPan = new Tone.Panner(Math.max(-1, -1 + pan));
         const rightPan = new Tone.Panner(Math.min(1, 1 + pan));
         
-        // Connect: osc -> gain -> panner -> master
+        // Connect: osc -> gain -> panner -> masterVolume -> destination
         leftOsc.connect(leftGain);
         rightOsc.connect(rightGain);
         leftGain.connect(leftPan);
@@ -146,14 +208,33 @@ class AudioEngine {
         leftPan.connect(this.masterVolume);
         rightPan.connect(this.masterVolume);
         
+        // Verify context is running before starting
+        if (Tone.context.state !== 'running') {
+          console.error('Cannot start oscillators: Audio context not running!');
+          throw new Error('Audio context must be running to play audio');
+        }
+        
         // Start oscillators
         leftOsc.start();
         rightOsc.start();
         
+        // Verify they actually started
+        setTimeout(() => {
+          if (leftOsc.state !== 'started' || rightOsc.state !== 'started') {
+            console.error('Oscillators failed to start! Left:', leftOsc.state, 'Right:', rightOsc.state);
+          }
+        }, 100);
+        
+        // Verify everything is connected and working
         console.log('Playing binaural beat:', safeLeftFreq.toFixed(1), 'Hz /', safeRightFreq.toFixed(1), 'Hz (beat:', beatFreq.toFixed(1), 'Hz) at volume', adjustedVolume.toFixed(2));
         console.log('Left osc state:', leftOsc.state, 'Right osc state:', rightOsc.state);
         console.log('Left gain:', leftGain.gain.value, 'Right gain:', rightGain.gain.value);
         console.log('Master volume dB:', this.masterVolume.volume.value);
+        console.log('Left frequency:', leftOsc.frequency.value, 'Right frequency:', rightOsc.frequency.value);
+        console.log('Connection chain: osc -> gain -> pan -> masterVolume -> destination');
+        
+        // Verify master volume is connected to destination
+        console.log('Master volume connected to destination:', this.masterVolume.volume.value, 'dB');
         
         // Store both gains for volume control
         this.activeOscillators.set(id, {

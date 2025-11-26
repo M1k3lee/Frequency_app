@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Frequency, ActiveFrequency, AudioMix, Playlist, VisualPreset } from '../types';
+import { Frequency, ActiveFrequency, AudioMix, Playlist, VisualPreset, FrequencySequence } from '../types';
 import { audioEngine } from '../audio/AudioEngine';
 import { getFrequencyById } from '../data/frequencies';
 
@@ -24,6 +24,12 @@ interface AppState {
   // Saved data
   savedPlaylists: Playlist[];
   savedMixes: AudioMix[];
+  savedSequences: FrequencySequence[];
+  
+  // Sequence playback
+  currentSequence: FrequencySequence | null;
+  currentSequenceStep: number;
+  sequenceTimer: NodeJS.Timeout | null;
   
   // Actions
   addFrequency: (frequency: Frequency, volume?: number, pan?: number) => Promise<void>;
@@ -62,12 +68,27 @@ export const useAppStore = create<AppState>()(
       isTimerActive: false,
       savedPlaylists: [],
       savedMixes: [],
+      savedSequences: [],
+      currentSequence: null,
+      currentSequenceStep: 0,
+      sequenceTimer: null,
 
       // Initialize audio engine
       addFrequency: async (frequency: Frequency, volume: number = 0.7, pan: number = 0) => {
         try {
           if (!audioEngine) {
             console.error('Audio engine not initialized');
+            return;
+          }
+
+          // Prevent duplicate playback - check if this frequency is already playing
+          const state = get();
+          const alreadyPlaying = Array.from(state.currentFrequencies.values()).some(
+            (f) => f.frequencyId === frequency.id && f.enabled
+          );
+          
+          if (alreadyPlaying) {
+            console.log('Frequency already playing, skipping duplicate:', frequency.name);
             return;
           }
 
@@ -155,6 +176,7 @@ export const useAppStore = create<AppState>()(
           isTimerActive: false,
           playbackTimerRemaining: null
         });
+        console.log('All frequencies stopped');
       },
 
       setPlaying: (playing: boolean) => {
@@ -250,6 +272,119 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           savedMixes: state.savedMixes.filter(m => m.id !== id)
         }));
+      },
+
+      saveSequence: (sequence: Omit<FrequencySequence, 'id' | 'createdAt'>) => {
+        const freqSequence: FrequencySequence = {
+          ...sequence,
+          id: `seq-${Date.now()}`,
+          createdAt: Date.now()
+        };
+        set((state) => ({
+          savedSequences: [...state.savedSequences, freqSequence]
+        }));
+      },
+
+      loadSequence: (id: string) => {
+        const state = get();
+        const sequence = state.savedSequences.find(s => s.id === id);
+        if (sequence) {
+          set({ currentSequence: sequence, currentSequenceStep: 0 });
+        }
+      },
+
+      removeSequence: (id: string) => {
+        set((state) => ({
+          savedSequences: state.savedSequences.filter(s => s.id !== id)
+        }));
+      },
+
+      playSequence: async (sequence: FrequencySequence) => {
+        const state = get();
+        state.stopAll();
+        state.stopSequence();
+        
+        set({ 
+          currentSequence: sequence, 
+          currentSequenceStep: 0,
+          isPlaying: true 
+        });
+
+        // Start playing the sequence
+        const playStep = async (stepIndex: number) => {
+          if (stepIndex >= sequence.steps.length) {
+            // Sequence complete
+            state.stopAll();
+            set({ currentSequence: null, currentSequenceStep: 0, isPlaying: false });
+            return;
+          }
+
+          const step = sequence.steps[stepIndex];
+          const frequency = getFrequencyById(step.frequencyId);
+          
+          if (!frequency) {
+            // Skip invalid frequency, move to next
+            playStep(stepIndex + 1);
+            return;
+          }
+
+          // Stop all and play this frequency
+          state.stopAll();
+          await state.addFrequency(frequency, step.volume || 0.7, step.pan || 0);
+          
+          set({ currentSequenceStep: stepIndex });
+
+          // Schedule next step
+          const durationMs = step.duration * 60 * 1000; // Convert minutes to ms
+          const fadeDuration = (sequence.fadeDuration || 5) * 1000; // Default 5 second fade
+          
+          const timer = setTimeout(() => {
+            // Fade out current frequency
+            if (stepIndex < sequence.steps.length - 1) {
+              // Fade out before next step
+              const fadeSteps = 20;
+              const fadeInterval = fadeDuration / fadeSteps;
+              let fadeStep = 0;
+              
+              const fadeTimer = setInterval(() => {
+                const currentFreqs = get().currentFrequencies;
+                currentFreqs.forEach((freq) => {
+                  const newVolume = freq.volume * (1 - fadeStep / fadeSteps);
+                  state.updateFrequency(freq.id, { volume: newVolume });
+                });
+                
+                fadeStep++;
+                if (fadeStep >= fadeSteps) {
+                  clearInterval(fadeTimer);
+                  state.stopAll();
+                  // Start next step
+                  playStep(stepIndex + 1);
+                }
+              }, fadeInterval);
+            } else {
+              // Last step, just stop
+              state.stopAll();
+              set({ currentSequence: null, currentSequenceStep: 0, isPlaying: false });
+            }
+          }, durationMs);
+
+          set({ sequenceTimer: timer as any });
+        };
+
+        // Start first step
+        await playStep(0);
+      },
+
+      stopSequence: () => {
+        const state = get();
+        if (state.sequenceTimer) {
+          clearTimeout(state.sequenceTimer);
+        }
+        set({ 
+          currentSequence: null, 
+          currentSequenceStep: 0, 
+          sequenceTimer: null 
+        });
       }
     }),
     {
@@ -259,7 +394,8 @@ export const useAppStore = create<AppState>()(
         showAdvanced: state.showAdvanced,
         currentVisual: state.currentVisual,
         savedPlaylists: state.savedPlaylists,
-        savedMixes: state.savedMixes
+        savedMixes: state.savedMixes,
+        savedSequences: state.savedSequences
       })
     }
   )
