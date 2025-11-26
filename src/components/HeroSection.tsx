@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Play, Pause, Volume2, Settings, Zap, Wind, Moon, Brain, Eye, EyeOff } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById, frequencies } from '../data/frequencies';
+import { Frequency } from '../types';
 import './HeroSection.css';
 
 const HeroSection: React.FC = () => {
@@ -28,7 +29,7 @@ const HeroSection: React.FC = () => {
     if (currentFrequencies.size === 0) return null;
     const activeFreq = Array.from(currentFrequencies.values())[0];
     if (activeFreq && activeFreq.enabled) {
-      return getFrequencyById(activeFreq.frequencyId);
+      return getFrequencyById(activeFreq.frequencyId) || null;
     }
     return null;
   };

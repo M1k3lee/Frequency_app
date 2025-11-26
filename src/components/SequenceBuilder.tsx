@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Clock, Plus, X, Play, Save, Trash2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
-import { frequencies, getFrequencyById } from '../data/frequencies';
+import { frequencies } from '../data/frequencies';
 import { FrequencySequence } from '../types';
 import './SequenceBuilder.css';
 
@@ -111,7 +111,7 @@ const SequenceBuilder: React.FC = () => {
               <p className="empty-steps">Click "Add Step" to create your sequence</p>
             ) : (
               steps.map((step, index) => {
-                const freq = getFrequencyById(step.frequencyId);
+                // const freq = getFrequencyById(step.frequencyId);
                 return (
                   <div key={index} className="sequence-step">
                     <div className="step-number">Step {index + 1}</div>

@@ -50,6 +50,10 @@ interface AppState {
   saveMix: (mix: Omit<AudioMix, 'id' | 'createdAt'>) => void;
   loadMix: (id: string) => void;
   removeMix: (id: string) => void;
+  saveSequence: (sequence: Omit<FrequencySequence, 'id' | 'createdAt'>) => void;
+  playSequence: (sequence: FrequencySequence) => Promise<void>;
+  removeSequence: (id: string) => void;
+  stopSequence: () => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -99,15 +103,8 @@ export const useAppStore = create<AppState>()(
           
           // Force audio context resume if needed (for Chrome autoplay policy)
           // This is especially important when playing from modals/overlays
-          try {
-            const Tone = (await import('tone')).default;
-            if (Tone.context.state === 'suspended') {
-              console.log('Resuming audio context for playback...');
-              await Tone.context.resume();
-            }
-          } catch (err) {
-            console.warn('Could not resume audio context:', err);
-          }
+          // Audio context is managed by AudioEngine, so we rely on ensureInitialized
+          // which is called by addFrequency in the audioEngine
           
           const id = await audioEngine.playFrequency(frequency, volume, pan);
           
