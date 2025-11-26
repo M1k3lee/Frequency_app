@@ -195,4 +195,3 @@ This application is for educational and research purposes only. It is not intend
 ---
 
 **Made with ❤️ for the exploration of consciousness and sound**
-
