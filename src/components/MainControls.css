@@ -1,0 +1,93 @@
+.main-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.play-button {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(100, 50, 150, 0.8), rgba(50, 100, 200, 0.8));
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.play-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 40px rgba(100, 50, 150, 0.4);
+}
+
+.play-button.playing {
+  background: linear-gradient(135deg, rgba(200, 50, 50, 0.8), rgba(150, 30, 30, 0.8));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(200, 50, 50, 0.3);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(200, 50, 50, 0.6);
+  }
+}
+
+.quick-presets {
+  text-align: center;
+}
+
+.quick-presets h3 {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 300;
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.preset-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.preset-btn:hover {
+  background: rgba(100, 50, 150, 0.3);
+  border-color: rgba(100, 50, 150, 0.5);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .play-button {
+    width: 100px;
+    height: 100px;
+  }
+
+  .preset-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .preset-btn {
+    width: 100%;
+  }
+}
+

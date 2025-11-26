@@ -1,0 +1,30 @@
+.app-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem 1rem 0.5rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+.app-logo {
+  max-width: 500px;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(100, 50, 150, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.app-logo:hover {
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 1.5rem 1rem;
+  }
+
+  .app-logo {
+    max-width: 375px;
+  }
+}
+

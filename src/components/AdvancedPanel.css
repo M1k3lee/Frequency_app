@@ -1,0 +1,295 @@
+.advanced-panel {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: white;
+}
+
+.advanced-header {
+  margin-bottom: 2rem;
+}
+
+.advanced-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 300;
+}
+
+.add-frequency-section,
+.active-mix-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.add-frequency-section h3,
+.active-mix-section h3 {
+  color: white;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.add-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.frequency-select {
+  flex: 1;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+}
+
+.frequency-select option {
+  background: #1a1a2e;
+  color: white;
+}
+
+.add-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(100, 50, 150, 0.6);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.add-btn:hover:not(:disabled) {
+  background: rgba(100, 50, 150, 1);
+}
+
+.add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-state {
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  padding: 2rem;
+}
+
+.active-frequencies {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.active-frequency-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.freq-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.freq-name {
+  font-weight: 500;
+  color: white;
+}
+
+.freq-hz {
+  color: rgba(100, 50, 150, 1);
+  font-weight: 600;
+}
+
+.freq-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.freq-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.freq-controls input[type="range"] {
+  width: 80px;
+}
+
+.remove-btn {
+  background: rgba(200, 50, 50, 0.6);
+  border: none;
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-btn:hover {
+  background: rgba(200, 50, 50, 1);
+}
+
+.mix-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  background: rgba(100, 50, 150, 0.3);
+  border-color: rgba(100, 50, 150, 0.5);
+}
+
+.action-btn.danger {
+  background: rgba(200, 50, 50, 0.2);
+  border-color: rgba(200, 50, 50, 0.4);
+}
+
+.action-btn.danger:hover {
+  background: rgba(200, 50, 50, 0.4);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 2rem;
+}
+
+.modal-content {
+  background: rgba(26, 26, 46, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 100%;
+  color: white;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: white;
+}
+
+.mix-name-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1rem;
+  margin: 1rem 0;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  padding: 0.75rem 1.5rem;
+  background: rgba(100, 50, 150, 0.6);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-actions button:hover {
+  background: rgba(100, 50, 150, 1);
+}
+
+.saved-mixes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.saved-mix-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.mix-item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mix-item-actions button {
+  padding: 0.5rem 1rem;
+  background: rgba(100, 50, 150, 0.6);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-btn {
+  background: rgba(200, 50, 50, 0.6) !important;
+}
+
+@media (max-width: 768px) {
+  .add-controls {
+    flex-direction: column;
+  }
+
+  .freq-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .freq-controls label {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
