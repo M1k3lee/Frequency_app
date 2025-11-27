@@ -35,11 +35,9 @@ class BackgroundSoundsManager {
       const gain = new Tone.Gain(0); // Start at 0 for fade-in
       
       // Create reverb for spa-like ambience
-      const reverb = new Tone.Reverb({
-        roomSize: 0.8,
-        wet: 0.3
-      });
-      await reverb.generate(2); // Generate 2 seconds of reverb
+      const reverb = new Tone.Reverb(2); // 2 seconds of reverb
+      reverb.wet.value = 0.3; // Set wet/dry mix
+      await reverb.generate(); // Generate the reverb impulse response
       
       let source: Tone.ToneAudioNode;
       
