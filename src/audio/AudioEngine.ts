@@ -138,7 +138,12 @@ class AudioEngine {
         const modulationDepth = 50; // Modulate by ±50Hz for audible effect
         
         // Create carrier oscillator at base frequency
-        const carrier = new Tone.Oscillator(carrierFreq, 'sine');
+        // Set phase to 0 to ensure smooth start and prevent clicks
+        const carrier = new Tone.Oscillator({
+          frequency: carrierFreq,
+          type: 'sine',
+          phase: 0
+        });
         
         // Create LFO for frequency modulation
         // Tone.js LFO: frequency, min, max
@@ -147,8 +152,8 @@ class AudioEngine {
         lfo.connect(carrier.frequency);
         lfo.start();
         
-        // Create gain for volume control - use full volume for carrier
-        const gain = new Tone.Gain(adjustedVolume);
+        // Create gain for volume control - start at 0 for smooth fade-in
+        const gain = new Tone.Gain(0);
         carrier.connect(gain);
         
         // Create panner for stereo positioning
@@ -162,8 +167,10 @@ class AudioEngine {
           throw new Error('Audio context must be running to play audio');
         }
         
-        // Start carrier
+        // Start carrier with zero volume, then fade in smoothly to prevent clicks
         carrier.start();
+        // Very short fade-in (5ms) to eliminate clicks from phase discontinuities
+        gain.gain.rampTo(adjustedVolume, 0.005);
         
         // Verify it actually started
         setTimeout(() => {
@@ -202,13 +209,21 @@ class AudioEngine {
         const safeLeftFreq = Math.max(20, Math.min(20000, leftFreq));
         const safeRightFreq = Math.max(20, Math.min(20000, rightFreq));
         
-        // Create oscillators
-        const leftOsc = new Tone.Oscillator(safeLeftFreq, 'sine');
-        const rightOsc = new Tone.Oscillator(safeRightFreq, 'sine');
+        // Create oscillators with phase set to 0 to ensure smooth start and prevent clicks
+        const leftOsc = new Tone.Oscillator({
+          frequency: safeLeftFreq,
+          type: 'sine',
+          phase: 0
+        });
+        const rightOsc = new Tone.Oscillator({
+          frequency: safeRightFreq,
+          type: 'sine',
+          phase: 0
+        });
         
-        // Create separate gains for left and right with increased volume
-        const leftGain = new Tone.Gain(adjustedVolume);
-        const rightGain = new Tone.Gain(adjustedVolume);
+        // Create separate gains for left and right - start at 0 for smooth fade-in
+        const leftGain = new Tone.Gain(0);
+        const rightGain = new Tone.Gain(0);
         
         // Create panners for stereo positioning
         const leftPan = new Tone.Panner(Math.max(-1, -1 + pan));
@@ -228,9 +243,12 @@ class AudioEngine {
           throw new Error('Audio context must be running to play audio');
         }
         
-        // Start oscillators
+        // Start oscillators with zero volume, then fade in smoothly to prevent clicks
         leftOsc.start();
         rightOsc.start();
+        // Very short fade-in (5ms) to eliminate clicks from phase discontinuities
+        leftGain.gain.rampTo(adjustedVolume, 0.005);
+        rightGain.gain.rampTo(adjustedVolume, 0.005);
         
         // Verify they actually started
         setTimeout(() => {
@@ -271,27 +289,47 @@ class AudioEngine {
     const osc = this.activeOscillators.get(id);
     if (osc) {
       try {
-        osc.left.stop();
-        osc.right.stop();
+        // Fade out smoothly to prevent clicks when stopping
+        const fadeOutTime = 0.01; // 10ms fade-out
         if (osc.carrier) {
-          osc.carrier.stop();
+          // Carrier modulation - single gain
+          osc.gain.gain.rampTo(0, fadeOutTime);
+        } else {
+          // Binaural beats - fade both gains
+          osc.gain.gain.rampTo(0, fadeOutTime);
+          if (osc.rightGain) {
+            osc.rightGain.gain.rampTo(0, fadeOutTime);
+          }
         }
-        if (osc.lfo) {
-          osc.lfo.stop();
-        }
-        osc.left.dispose();
-        osc.right.dispose();
-        if (osc.carrier) {
-          osc.carrier.dispose();
-        }
-        if (osc.lfo) {
-          osc.lfo.dispose();
-        }
-        osc.gain.dispose();
-        if (osc.rightGain) {
-          osc.rightGain.dispose();
-        }
-        osc.pan.dispose();
+        
+        // Stop oscillators after fade-out completes
+        setTimeout(() => {
+          try {
+            osc.left.stop();
+            osc.right.stop();
+            if (osc.carrier) {
+              osc.carrier.stop();
+            }
+            if (osc.lfo) {
+              osc.lfo.stop();
+            }
+            osc.left.dispose();
+            osc.right.dispose();
+            if (osc.carrier) {
+              osc.carrier.dispose();
+            }
+            if (osc.lfo) {
+              osc.lfo.dispose();
+            }
+            osc.gain.dispose();
+            if (osc.rightGain) {
+              osc.rightGain.dispose();
+            }
+            osc.pan.dispose();
+          } catch (error) {
+            console.error('Error disposing oscillators:', error);
+          }
+        }, fadeOutTime * 1000 + 10); // Add small buffer for fade completion
       } catch (error) {
         console.error('Error stopping frequency:', error);
       }

@@ -62,3 +62,18 @@ export interface FrequencySequence {
   createdAt: number;
 }
 
+export interface BackgroundSound {
+  id: string;
+  name: string;
+  category: 'nature' | 'spa' | 'noise' | 'ambient';
+  description: string;
+  icon?: string;
+}
+
+export interface ActiveBackgroundSound {
+  id: string;
+  soundId: string;
+  volume: number;
+  enabled: boolean;
+}
+

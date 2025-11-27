@@ -5,10 +5,24 @@ import { getFrequencyById } from '../data/frequencies';
 import './MainControls.css';
 
 const MainControls: React.FC = () => {
-  const { isPlaying, setPlaying, stopAll, addFrequency } = useAppStore();
+  const { isPlaying, setPlaying, stopAll, addFrequency, currentFrequencies } = useAppStore();
+
+  // Get currently playing frequency
+  const getCurrentPlayingFrequency = () => {
+    if (currentFrequencies.size === 0) return null;
+    const activeFreq = Array.from(currentFrequencies.values())[0];
+    if (activeFreq && activeFreq.enabled) {
+      return getFrequencyById(activeFreq.frequencyId);
+    }
+    return null;
+  };
+
+  const currentPlayingFreq = getCurrentPlayingFrequency();
+  const actuallyPlaying = currentFrequencies.size > 0 && isPlaying;
 
   const handlePlayPause = async () => {
-    if (isPlaying) {
+    if (actuallyPlaying) {
+      // Pause - stop all frequencies
       stopAll();
       setPlaying(false);
     } else {
@@ -39,13 +53,24 @@ const MainControls: React.FC = () => {
 
   return (
     <div className="main-controls">
-      <button
-        className={`play-button ${isPlaying ? 'playing' : ''}`}
-        onClick={handlePlayPause}
-        aria-label={isPlaying ? 'Pause' : 'Play'}
-      >
-        {isPlaying ? <Pause size={48} /> : <Play size={48} />}
-      </button>
+      <div className="play-control-group">
+        <button
+          className={`play-button ${actuallyPlaying ? 'playing' : ''}`}
+          onClick={handlePlayPause}
+          aria-label={actuallyPlaying ? 'Pause' : 'Play'}
+        >
+          {actuallyPlaying ? <Pause size={48} /> : <Play size={48} />}
+        </button>
+        
+        {currentPlayingFreq && (
+          <div className="current-frequency-info-main">
+            <div className="current-freq-name-main">
+              <span className="freq-name-main">{currentPlayingFreq.name}</span>
+              <span className="freq-value-main">{currentPlayingFreq.frequency} Hz</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="quick-presets">
         <h3>Quick Start</h3>

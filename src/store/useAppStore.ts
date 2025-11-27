@@ -1,14 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Frequency, ActiveFrequency, AudioMix, Playlist, VisualPreset, FrequencySequence } from '../types';
+import { Frequency, ActiveFrequency, AudioMix, Playlist, VisualPreset, FrequencySequence, BackgroundSound, ActiveBackgroundSound } from '../types';
 import { audioEngine } from '../audio/AudioEngine';
+import { backgroundSoundsManager } from '../audio/BackgroundSoundsManager';
 import { getFrequencyById } from '../data/frequencies';
+import { getBackgroundSoundById } from '../data/backgroundSounds';
 
 interface AppState {
   // Audio state
   currentFrequencies: Map<string, ActiveFrequency>;
   isPlaying: boolean;
   masterVolume: number;
+  
+  // Background sounds
+  currentBackgroundSounds: Map<string, ActiveBackgroundSound>;
+  backgroundSoundVolume: number;
+  showBackgroundSounds: boolean;
   
   // UI state
   showAdvanced: boolean;
@@ -38,6 +45,11 @@ interface AppState {
   stopAll: () => void;
   setPlaying: (playing: boolean) => void;
   setMasterVolume: (volume: number) => void;
+  addBackgroundSound: (sound: BackgroundSound, volume?: number) => Promise<void>;
+  removeBackgroundSound: (id: string) => void;
+  setBackgroundSoundVolume: (id: string, volume: number) => void;
+  stopAllBackgroundSounds: () => void;
+  setShowBackgroundSounds: (show: boolean) => void;
   setShowAdvanced: (show: boolean) => void;
   setShowGateway: (show: boolean) => void;
   setShowBreathing: (show: boolean) => void;
@@ -63,6 +75,9 @@ export const useAppStore = create<AppState>()(
       currentFrequencies: new Map(),
       isPlaying: false,
       masterVolume: 0.7,
+      currentBackgroundSounds: new Map(),
+      backgroundSoundVolume: 0.3,
+      showBackgroundSounds: false,
       showAdvanced: false,
       showGateway: false,
       showBreathing: false,
@@ -186,6 +201,70 @@ export const useAppStore = create<AppState>()(
           playbackTimerRemaining: null
         });
         console.log('All frequencies stopped');
+      },
+
+      addBackgroundSound: async (sound: BackgroundSound, volume: number = 0.3) => {
+        try {
+          const state = get();
+          // Check if already playing
+          const alreadyPlaying = Array.from(state.currentBackgroundSounds.values()).some(
+            (s) => s.soundId === sound.id && s.enabled
+          );
+          
+          if (alreadyPlaying) {
+            console.log('Background sound already playing:', sound.name);
+            return;
+          }
+
+          const id = await backgroundSoundsManager.playSound(sound, volume);
+          
+          const activeSound: ActiveBackgroundSound = {
+            id,
+            soundId: sound.id,
+            volume,
+            enabled: true
+          };
+
+          set((state) => {
+            const newSounds = new Map(state.currentBackgroundSounds);
+            newSounds.set(id, activeSound);
+            return { currentBackgroundSounds: newSounds };
+          });
+        } catch (error) {
+          console.error('Error adding background sound:', error);
+        }
+      },
+
+      removeBackgroundSound: (id: string) => {
+        backgroundSoundsManager?.stopSound(id);
+        set((state) => {
+          const newSounds = new Map(state.currentBackgroundSounds);
+          newSounds.delete(id);
+          return { currentBackgroundSounds: newSounds };
+        });
+      },
+
+      setBackgroundSoundVolume: (id: string, volume: number) => {
+        backgroundSoundsManager?.setVolume(id, volume);
+        set((state) => {
+          const sound = state.currentBackgroundSounds.get(id);
+          if (sound) {
+            const updated = { ...sound, volume };
+            const newSounds = new Map(state.currentBackgroundSounds);
+            newSounds.set(id, updated);
+            return { currentBackgroundSounds: newSounds };
+          }
+          return state;
+        });
+      },
+
+      stopAllBackgroundSounds: () => {
+        backgroundSoundsManager?.stopAll();
+        set({ currentBackgroundSounds: new Map() });
+      },
+
+      setShowBackgroundSounds: (show: boolean) => {
+        set({ showBackgroundSounds: show });
       },
 
       setPlaying: (playing: boolean) => {

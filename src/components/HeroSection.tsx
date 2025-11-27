@@ -3,6 +3,7 @@ import { Play, Pause, Volume2, Settings, Zap, Wind, Moon, Brain, Eye, EyeOff } f
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById, frequencies } from '../data/frequencies';
 import { Frequency } from '../types';
+import BackgroundSounds from './BackgroundSounds';
 import './HeroSection.css';
 
 const HeroSection: React.FC = () => {
@@ -233,6 +234,9 @@ const HeroSection: React.FC = () => {
             ))}
           </div>
         </div>
+
+        {/* Background Sounds */}
+        <BackgroundSounds />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Play, Pause, Volume2, Timer, Save, Square, Clock } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { getFrequencyById } from '../data/frequencies';
 import './PlaybackBar.css';
 
 const PlaybackBar: React.FC = () => {
@@ -16,7 +17,8 @@ const PlaybackBar: React.FC = () => {
     setPlaybackTimerRemaining,
     setIsTimerActive,
     setPlaybackTimer,
-    saveToPlaylist
+    saveToPlaylist,
+    addFrequency
   } = useAppStore();
 
   const [showTimerModal, setShowTimerModal] = useState(false);
@@ -75,21 +77,58 @@ const PlaybackBar: React.FC = () => {
     setIsTimerActive(false);
   };
 
+  // Get currently playing frequency
+  const getCurrentPlayingFrequency = () => {
+    if (currentFrequencies.size === 0) return null;
+    const activeFreq = Array.from(currentFrequencies.values())[0];
+    if (activeFreq && activeFreq.enabled) {
+      return getFrequencyById(activeFreq.frequencyId);
+    }
+    return null;
+  };
+
+  const currentPlayingFreq = getCurrentPlayingFrequency();
+  const actuallyPlaying = currentFrequencies.size > 0 && isPlaying;
+
+  const handlePlayPause = async () => {
+    if (actuallyPlaying) {
+      // Pause - stop all frequencies
+      stopAll();
+      setPlaying(false);
+    } else {
+      // Nothing playing - start with default
+      const defaultFreq = getFrequencyById('alpha-10');
+      if (defaultFreq) {
+        await addFrequency(defaultFreq);
+        setPlaying(true);
+      }
+    }
+  };
+
   return (
     <div className="playback-bar">
       <div className="playback-bar-content">
         <button
-          className="playback-btn"
-          onClick={() => setPlaying(!isPlaying)}
-          aria-label={isPlaying ? 'Pause' : 'Play'}
+          className={`playback-btn ${actuallyPlaying ? 'playing' : ''}`}
+          onClick={handlePlayPause}
+          aria-label={actuallyPlaying ? 'Pause' : 'Play'}
         >
-          {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+          {actuallyPlaying ? <Pause size={20} /> : <Play size={20} />}
         </button>
 
         <div className="playback-info">
-          <span className="active-count">
-            {currentFrequencies.size} frequency{currentFrequencies.size !== 1 ? 's' : ''} active
-          </span>
+          {currentPlayingFreq ? (
+            <div className="current-frequency-display">
+              <div className="current-freq-name-display">
+                <span className="freq-name-text">{currentPlayingFreq.name}</span>
+                <span className="freq-value-text">{currentPlayingFreq.frequency} Hz</span>
+              </div>
+            </div>
+          ) : (
+            <span className="active-count">
+              {currentFrequencies.size} frequency{currentFrequencies.size !== 1 ? 's' : ''} active
+            </span>
+          )}
           {isTimerActive && playbackTimerRemaining !== null && (
             <div className="timer-display-chunky">
               <Timer size={16} />

@@ -6,6 +6,46 @@
   padding: 2rem;
 }
 
+.play-control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.current-frequency-info-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.current-freq-name-main {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.freq-name-main {
+  font-family: 'Orbitron', 'Rajdhani', monospace;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #ffffff;
+  text-shadow: 0 0 15px rgba(100, 50, 150, 0.7), 0 0 30px rgba(100, 50, 150, 0.4);
+  letter-spacing: 0.05em;
+}
+
+.freq-value-main {
+  font-family: 'Orbitron', 'Rajdhani', monospace;
+  font-weight: 600;
+  font-size: 1rem;
+  color: rgba(100, 50, 150, 1);
+  text-shadow: 0 0 10px rgba(100, 50, 150, 0.9);
+  letter-spacing: 0.1em;
+}
+
 .play-button {
   width: 120px;
   height: 120px;
