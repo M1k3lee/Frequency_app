@@ -4,7 +4,6 @@ import { Frequency, ActiveFrequency, AudioMix, Playlist, VisualPreset, Frequency
 import { audioEngine } from '../audio/AudioEngine';
 import { backgroundSoundsManager } from '../audio/BackgroundSoundsManager';
 import { getFrequencyById } from '../data/frequencies';
-import { getBackgroundSoundById } from '../data/backgroundSounds';
 
 interface AppState {
   // Audio state

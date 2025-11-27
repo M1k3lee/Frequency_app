@@ -2,7 +2,6 @@ import * as Tone from 'tone';
 import { BackgroundSound } from '../types';
 
 class BackgroundSoundsManager {
-  private context: Tone.BaseContext | null = null;
   private activeSounds: Map<string, {
     player?: Tone.Player;
     noise?: Tone.Noise;
@@ -23,7 +22,6 @@ class BackgroundSoundsManager {
       await Tone.start();
     }
     
-    this.context = Tone.context;
     this.isInitialized = true;
   }
 
@@ -41,7 +39,7 @@ class BackgroundSoundsManager {
         roomSize: 0.8,
         wet: 0.3
       });
-      await reverb.generate();
+      await reverb.generate(2); // Generate 2 seconds of reverb
       
       let source: Tone.ToneAudioNode;
       
