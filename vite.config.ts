@@ -12,7 +12,7 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: true
   },
-  // GitHub Pages base path - change this if your repo name is different
-  base: process.env.GITHUB_ACTIONS ? '/Frequency_app/' : './'
+  // GitHub Pages base path - using custom domain zoneout.space
+  base: '/'
 })
 
