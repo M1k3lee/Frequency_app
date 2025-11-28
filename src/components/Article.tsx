@@ -54,7 +54,7 @@ const Article: React.FC<ArticleProps> = ({ article: propArticle }) => {
 
       // Add FAQ schema if questions exist
       if (article.faq && article.faq.length > 0) {
-        structuredData["mainEntity"] = {
+        (structuredData as any)["mainEntity"] = {
           "@type": "FAQPage",
           "mainEntity": article.faq.map(q => ({
             "@type": "Question",
