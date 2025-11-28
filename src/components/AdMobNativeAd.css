@@ -1,0 +1,72 @@
+.admob-native-ad-container {
+  width: 100%;
+  margin: 20px 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+
+.native-ad-container {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100px;
+  background: transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ensure native ad content is visible */
+.native-ad-container * {
+  max-width: 100%;
+}
+
+.ad-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  width: 100%;
+}
+
+.ad-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ad-error {
+  display: none; /* Silently fail */
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+  .admob-native-ad-container {
+    margin: 16px 0;
+    padding: 0 8px;
+  }
+  
+  .native-ad-container {
+    min-height: 80px;
+  }
+}
+
+/* Ensure ad doesn't break layout */
+@media (min-width: 769px) {
+  .admob-native-ad-container {
+    max-width: 600px;
+    margin: 24px auto;
+  }
+}
+

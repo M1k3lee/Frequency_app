@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Frequency Zen - Binaural Beats & Meditation Articles</title>
+    <link>https://zoneout.space</link>
+    <description>Articles about binaural beats, meditation frequencies, sleep apps, and brainwave entrainment</description>
+    <language>en-us</language>
+    <atom:link href="https://zoneout.space/rss.xml" rel="self" type="application/rss+xml"/>
+    <item>
+      <title>What Are Binaural Beats? Complete Guide to Brainwave Entrainment</title>
+      <link>https://zoneout.space/articles/what-are-binaural-beats</link>
+      <description>Discover what binaural beats are, how they work, and their benefits for meditation, sleep, and focus.</description>
+      <pubDate>Mon, 15 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Best Sleep App for Android: Top Sleep Frequency Apps in 2026</title>
+      <link>https://zoneout.space/articles/best-sleep-app-android</link>
+      <description>Discover the best sleep apps for Android featuring binaural beats, sleep frequencies, and meditation sounds.</description>
+      <pubDate>Mon, 20 Jan 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Best Frequencies for Sleep: Complete Guide to Sleep-Inducing Hz</title>
+      <link>https://zoneout.space/articles/best-frequencies-for-sleep</link>
+      <description>Discover the best Hz frequencies for sleep, including delta and theta waves.</description>
+      <pubDate>Thu, 18 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Best Study Sounds App: Top Apps for Focus and Concentration</title>
+      <link>https://zoneout.space/articles/best-study-sounds-app</link>
+      <description>Find the best study sounds app for improved focus and concentration.</description>
+      <pubDate>Tue, 22 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Brainwave Frequencies Explained: Alpha, Beta, Theta, Delta & Gamma Waves</title>
+      <link>https://zoneout.space/articles/brainwave-frequencies-explained</link>
+      <description>Complete guide to brainwave frequencies: alpha, beta, theta, delta, and gamma waves.</description>
+      <pubDate>Tue, 16 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>
+

@@ -105,6 +105,15 @@ const HeroSection: React.FC = () => {
 
   return (
     <div className="hero-section">
+      <div className="hero-intro">
+        <h1 className="hero-title">Free Binaural Beats App for Meditation, Sleep & Focus</h1>
+        <p className="hero-description">
+          Experience the power of brainwave entrainment with Frequency Zen - the best free binaural beats app for Android and iOS. 
+          Use theta waves for deep meditation, delta frequencies for sleep, beta waves for focus, and alpha frequencies for relaxation. 
+          Our free meditation app features Gateway Project frequencies, ambient background sounds, and scientifically-backed brainwave frequencies 
+          to enhance your meditation practice, improve sleep quality, and boost concentration.
+        </p>
+      </div>
       <div className="hero-card">
         {/* Playback and Volume Controls */}
         <div className="playback-controls">

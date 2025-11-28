@@ -40,3 +40,10 @@ ios/.idea
 .env.production.local
 .env.development.local
 
+# Android signing keys (IMPORTANT: Keep these secure!)
+*.keystore
+*.jks
+android/app/release.keystore
+android/app/debug.keystore
+key.properties
+

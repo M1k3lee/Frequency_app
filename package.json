@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:gh-pages": "NODE_ENV=production vite build",
+    "build:mobile": "tsc && vite build --config vite.config.mobile.ts",
     "preview": "vite preview",
     "setup:mobile": "node scripts/init-capacitor.js",
     "cap:sync": "cap sync",
@@ -13,12 +14,13 @@
     "cap:open:ios": "cap open ios",
     "cap:run:android": "cap run android",
     "cap:run:ios": "cap run ios",
-    "cap:build:android": "npm run build && cap sync android && cd android && ./gradlew assembleDebug",
-    "cap:build:android:release": "npm run build && cap sync android && cd android && ./gradlew assembleRelease",
+    "cap:build:android": "npm run build:mobile && cap sync android && cd android && ./gradlew assembleDebug",
+    "cap:build:android:release": "npm run build:mobile && cap sync android && cd android && ./gradlew assembleRelease",
     "check:setup": "node scripts/check-setup.js",
     "icons:help": "node scripts/create-app-icons.js"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^7.2.0",
     "@capacitor/android": "^5.7.8",
     "@capacitor/app": "^5.0.6",
     "@capacitor/core": "^5.5.1",
@@ -30,6 +32,7 @@
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^7.9.6",
     "three": "^0.158.0",
     "tone": "^14.7.77",
     "zustand": "^4.4.7"
@@ -49,4 +52,3 @@
     "vite": "^5.4.0"
   }
 }
-
