@@ -1,5 +1,6 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useMobileOptimizations } from './hooks/useMobileOptimizations';
+import { usePageTracking } from './hooks/usePageTracking';
 import { useAppStore } from './store/useAppStore';
 import AppHeader from './components/AppHeader';
 import HeroSection from './components/HeroSection';
@@ -16,6 +17,7 @@ import './App.css';
 
 function AppContent() {
   useMobileOptimizations();
+  usePageTracking();
   const { showAdvanced, showGateway, showBreathing } = useAppStore();
   const location = useLocation();
   const isArticlePage = location.pathname.startsWith('/articles');
