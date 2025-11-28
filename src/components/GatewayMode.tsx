@@ -56,13 +56,10 @@ const GatewayMode: React.FC = () => {
       e.preventDefault();
     }
 
-    // If already playing, pause it
+    // If already playing, pause it by stopping all
     if (isFrequencyPlaying(freqId)) {
-      const activeId = getActiveFrequencyId(freqId);
-      if (activeId) {
-        removeFrequency(activeId);
-        setPlaying(false);
-      }
+      stopAll();
+      // stopAll() already sets isPlaying to false, no need to call setPlaying again
       return;
     }
 
@@ -130,32 +127,46 @@ const GatewayMode: React.FC = () => {
               </div>
               <button
                 className="gateway-pause-btn"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  if (isPlaying) {
+                  // Check if there are actually active frequencies playing
+                  const hasActiveFrequencies = currentFrequencies.size > 0 && 
+                    Array.from(currentFrequencies.values()).some(f => f.enabled);
+                  
+                  if (hasActiveFrequencies && isPlaying) {
+                    // Pause - stop all frequencies
                     stopAll();
-                    setPlaying(false);
+                    // stopAll() already sets isPlaying to false, no need to call setPlaying again
                   } else {
-                    const activeFreq = Array.from(currentFrequencies.values())[0];
-                    if (activeFreq) {
-                      const freq = getFrequencyById(activeFreq.frequencyId);
-                      if (freq) {
-                        addFrequency(freq);
+                    // Resume - restart the current frequency
+                    if (currentPlayingFreq) {
+                      // Stop all first to ensure clean state
+                      stopAll();
+                      // Small delay to ensure cleanup
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                      // Restart the frequency
+                      try {
+                        if (!audioEngine.isReadyForPlayback()) {
+                          await audioEngine.initialize();
+                        }
+                        await addFrequency(currentPlayingFreq);
                         setPlaying(true);
+                      } catch (error) {
+                        console.error('Gateway: Error resuming frequency:', error);
                       }
                     }
                   }
                 }}
-                aria-label={isPlaying ? 'Pause' : 'Play'}
+                aria-label={(currentFrequencies.size > 0 && isPlaying) ? 'Pause' : 'Play'}
               >
-                {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+                {(currentFrequencies.size > 0 && isPlaying) ? <Pause size={18} /> : <Play size={18} />}
               </button>
               <button
                 className="gateway-stop-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   stopAll();
-                  setPlaying(false);
+                  // stopAll() already sets isPlaying to false, no need to call setPlaying again
                 }}
                 aria-label="Stop"
               >
