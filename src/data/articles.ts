@@ -133,7 +133,7 @@ export const articles: ArticleData[] = [
         paragraphs: [
           'Frequency Zen stands out as one of the best free sleep apps for Android because it offers:',
           'Comprehensive frequency library with delta, theta, alpha, and beta waves specifically optimized for sleep',
-          'Beautiful, relaxing background sounds including rain, ocean waves, and fireplace sounds',
+          'Beautiful, relaxing background sounds including rain, ocean waves, and nature sounds',
           'Completely free with no subscription required',
           'Works perfectly in the background - you can lock your phone and the app continues playing',
           'No ads that interrupt your sleep session',

@@ -1,5 +1,7 @@
 import * as Tone from 'tone';
 import { Frequency } from '../types';
+import { GatewaySignalGenerator } from './gateway/GatewaySignalGenerator';
+import { getGatewayConfig } from './gateway/GatewaySignalConfig';
 
 class AudioEngine {
   private context: Tone.BaseContext | null = null;
@@ -13,6 +15,8 @@ class AudioEngine {
     rightGain?: Tone.Gain;
     pan: Tone.Panner;
   }> = new Map();
+  private gatewayGenerator: GatewaySignalGenerator | null = null;
+  private webAudioContext: AudioContext | null = null;
   private isInitialized: boolean = false;
   private isReady: boolean = false;
 
@@ -108,6 +112,16 @@ class AudioEngine {
   }
 
   async playFrequency(frequency: Frequency, volume: number = 0.7, pan: number = 0): Promise<string> {
+    // Check if this is a Gateway signal
+    const gatewayConfig = getGatewayConfig(frequency.id);
+    const isGateway = frequency.isGatewaySignal || gatewayConfig !== null;
+
+    if (isGateway && gatewayConfig) {
+      // Use Gateway signal generator (Web Audio API)
+      return await this.playGatewaySignal(gatewayConfig, volume);
+    }
+
+    // Use Tone.js for regular frequencies (existing implementation)
     // Ensure audio context is running - critical for Chrome autoplay policy
     await this.ensureInitialized();
     
@@ -286,6 +300,16 @@ class AudioEngine {
   }
 
   stopFrequency(id: string): void {
+    // Check if this is a Gateway signal
+    if (id.startsWith('gateway-')) {
+      if (this.gatewayGenerator) {
+        this.gatewayGenerator.stop();
+        this.gatewayGenerator.dispose();
+        this.gatewayGenerator = null;
+      }
+      return;
+    }
+
     const osc = this.activeOscillators.get(id);
     if (osc) {
       try {
@@ -337,7 +361,70 @@ class AudioEngine {
     }
   }
 
+  private async playGatewaySignal(config: ReturnType<typeof getGatewayConfig>, volume: number): Promise<string> {
+    if (!config) {
+      throw new Error('Gateway config not found');
+    }
+
+    // Ensure Tone.js context is initialized
+    await this.ensureInitialized();
+
+    // Stop any existing Gateway signal
+    if (this.gatewayGenerator) {
+      this.gatewayGenerator.dispose();
+      this.gatewayGenerator = null;
+    }
+
+    // Use Tone.js's underlying Web Audio API context
+    // Tone.js uses Web Audio API, so we can access the raw context
+    const toneContext = Tone.context;
+    const webAudioContext = toneContext.rawContext as AudioContext;
+
+    // Resume if suspended
+    if (webAudioContext.state === 'suspended') {
+      await webAudioContext.resume();
+    }
+
+    // Create Gateway signal generator using Tone.js's AudioContext
+    this.gatewayGenerator = new GatewaySignalGenerator(webAudioContext);
+    await this.gatewayGenerator.initialize(config);
+
+    // Create a Web Audio GainNode to match Tone.js master volume
+    // This allows Gateway signals to respect the master volume control
+    const gatewayGain = webAudioContext.createGain();
+    const masterVol = this.masterVolume.volume.value;
+    const masterVolLinear = Tone.dbToGain(masterVol);
+    gatewayGain.gain.value = volume * masterVolLinear;
+    
+    // Connect: Gateway Generator -> Gateway Gain -> Destination
+    this.gatewayGenerator.connect(gatewayGain);
+    gatewayGain.connect(webAudioContext.destination);
+    
+    // Store gateway gain for volume updates
+    (this.gatewayGenerator as any).gatewayGain = gatewayGain;
+    (this.gatewayGenerator as any).baseVolume = volume;
+
+    // Start playing
+    this.gatewayGenerator.start();
+
+    console.log('Gateway signal started:', config.name, {
+      carrierLayers: config.carrierLayers.length,
+      isochronicLayers: config.isochronicLayers.length,
+    });
+
+    // Return a unique ID for Gateway signals
+    return `gateway-${config.id}-${Date.now()}`;
+  }
+
   stopAll(): void {
+    // Stop Gateway generator
+    if (this.gatewayGenerator) {
+      this.gatewayGenerator.stop();
+      this.gatewayGenerator.dispose();
+      this.gatewayGenerator = null;
+    }
+
+    // Stop all Tone.js oscillators
     this.activeOscillators.forEach((_, id) => {
       this.stopFrequency(id);
     });
@@ -375,6 +462,15 @@ class AudioEngine {
     this.masterVolume.volume.value = dbValue;
     console.log('Master volume set to:', volume, '(', dbValue.toFixed(1), 'dB)');
     console.log('Master volume node connected:', this.masterVolume.volume.value, 'dB');
+
+    // Also update Gateway generator volume if active
+    if (this.gatewayGenerator) {
+      const gatewayGain = (this.gatewayGenerator as any).gatewayGain;
+      const baseVolume = (this.gatewayGenerator as any).baseVolume || 0.7;
+      if (gatewayGain) {
+        gatewayGain.gain.value = baseVolume * volume;
+      }
+    }
   }
 
   getAnalyser(): AnalyserNode | null {

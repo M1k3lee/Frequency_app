@@ -146,28 +146,6 @@ class BackgroundSoundsManager {
           });
           break;
           
-        case 'fireplace':
-          // Fireplace crackling using filtered noise
-          const fireNoise = new Tone.Noise('pink');
-          const fireFilter = new Tone.Filter({
-            frequency: 2000,
-            type: 'bandpass',
-            Q: 4
-          });
-          const fireLFO = new Tone.LFO(2, 1500, 2500).start();
-          fireLFO.connect(fireFilter.frequency);
-          fireNoise.connect(fireFilter);
-          fireFilter.connect(gain);
-          source = fireNoise;
-          this.activeSounds.set(id, {
-            noise: fireNoise,
-            filter: fireFilter,
-            lfo: fireLFO,
-            gain,
-            reverb
-          });
-          break;
-          
         case 'wind':
           // Wind using filtered noise
           const windNoise = new Tone.Noise('pink');

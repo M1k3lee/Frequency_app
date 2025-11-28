@@ -9,12 +9,22 @@ export interface Frequency {
   gatewayReference?: string;
   effects?: string[];
   recommendedDuration?: number; // in minutes
+  isGatewaySignal?: boolean; // If true, use Gateway signal generator
   experimentalData?: {
     methodology?: string;
     testSubjects?: string;
     reactions?: string[];
     outcomes?: string[];
     notes?: string;
+    hemiSyncSpecs?: {
+      targetBeatFrequency?: string;
+      carrierLayers?: number;
+      carrierFrequencies?: string[];
+      isochronicLayers?: number;
+      phaseRelationships?: string;
+      totalEntrainmentTechniques?: number;
+      signalComplexity?: string;
+    };
   };
 }
 

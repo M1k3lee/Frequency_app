@@ -23,13 +23,6 @@ export const backgroundSounds: BackgroundSound[] = [
     icon: '🌲'
   },
   {
-    id: 'fireplace',
-    name: 'Fireplace',
-    category: 'ambient',
-    description: 'Cozy fireplace crackling',
-    icon: '🔥'
-  },
-  {
     id: 'wind',
     name: 'Gentle Wind',
     category: 'nature',
