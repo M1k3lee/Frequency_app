@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { isMobileApp } from '../utils/isMobileApp';
 import './Footer.css';
 
 const Footer: React.FC = () => {
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+  const isMobile = isMobileApp();
   
   const handleLinkClick = (path: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,35 +45,65 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="app-footer">
+    <footer className={`app-footer ${isMobile ? 'mobile-footer' : ''}`}>
       <div className="footer-content">
-        <div className="footer-main">
-          <div className="footer-brand">
-            <h3>Frequency Zen</h3>
-            <p>Free binaural beats and meditation sounds for sleep, focus, and relaxation. Experience the power of brainwave entrainment.</p>
-          </div>
+        {!isMobile && (
+          <div className="footer-main">
+            <div className="footer-brand">
+              <h3>Frequency Zen</h3>
+              <p>Free binaural beats and meditation sounds for sleep, focus, and relaxation. Experience the power of brainwave entrainment.</p>
+            </div>
 
-          <div className="footer-links">
-            {articleCategories.map((category, index) => (
-              <div key={index} className="footer-category">
-                <h4>{category.title}</h4>
-                <ul>
-                  {category.links.map((link, linkIndex) => (
-                    <li key={linkIndex}>
-                      <a 
-                        href={link.path} 
-                        onClick={(e) => handleLinkClick(link.path, e)}
-                        title={link.description}
-                      >
-                        {link.title}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            <div className="footer-links">
+              {articleCategories.map((category, index) => (
+                <div key={index} className="footer-category">
+                  <h4>{category.title}</h4>
+                  <ul>
+                    {category.links.map((link, linkIndex) => (
+                      <li key={linkIndex}>
+                        <a 
+                          href={link.path} 
+                          onClick={(e) => handleLinkClick(link.path, e)}
+                          title={link.description}
+                        >
+                          {link.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+        
+        {isMobile && (
+          <div className="footer-mobile">
+            <div className="footer-brand-mobile">
+              <h3>Frequency Zen</h3>
+            </div>
+            <div className="footer-links-mobile">
+              {articleCategories.map((category, index) => (
+                <div key={index} className="footer-category-mobile">
+                  <h4>{category.title}</h4>
+                  <ul>
+                    {category.links.map((link, linkIndex) => (
+                      <li key={linkIndex}>
+                        <a 
+                          href={link.path} 
+                          onClick={(e) => handleLinkClick(link.path, e)}
+                          title={link.description}
+                        >
+                          {link.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="footer-bottom">
           <div className="footer-meta">

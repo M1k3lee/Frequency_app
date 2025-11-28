@@ -4,6 +4,7 @@ import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById, frequencies } from '../data/frequencies';
 import { Frequency } from '../types';
 import BackgroundSounds from './BackgroundSounds';
+import { isMobileApp } from '../utils/isMobileApp';
 import './HeroSection.css';
 
 const HeroSection: React.FC = () => {
@@ -103,17 +104,21 @@ const HeroSection: React.FC = () => {
     // If showing, keep current visual
   };
 
+  const isMobile = isMobileApp();
+
   return (
     <div className="hero-section">
-      <div className="hero-intro">
-        <h1 className="hero-title">Free Binaural Beats App for Meditation, Sleep & Focus</h1>
-        <p className="hero-description">
-          Experience the power of brainwave entrainment with Frequency Zen - the best free binaural beats app for Android and iOS. 
-          Use theta waves for deep meditation, delta frequencies for sleep, beta waves for focus, and alpha frequencies for relaxation. 
-          Our free meditation app features Gateway Project frequencies, ambient background sounds, and scientifically-backed brainwave frequencies 
-          to enhance your meditation practice, improve sleep quality, and boost concentration.
-        </p>
-      </div>
+      {!isMobile && (
+        <div className="hero-intro">
+          <h1 className="hero-title">Free Binaural Beats App for Meditation, Sleep & Focus</h1>
+          <p className="hero-description">
+            Experience the power of brainwave entrainment with Frequency Zen - the best free binaural beats app for Android and iOS. 
+            Use theta waves for deep meditation, delta frequencies for sleep, beta waves for focus, and alpha frequencies for relaxation. 
+            Our free meditation app features Gateway Project frequencies, ambient background sounds, and scientifically-backed brainwave frequencies 
+            to enhance your meditation practice, improve sleep quality, and boost concentration.
+          </p>
+        </div>
+      )}
       <div className="hero-card">
         {/* Playback and Volume Controls */}
         <div className="playback-controls">
