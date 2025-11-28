@@ -36,8 +36,9 @@ export class CarrierLayerNode {
 
     this.leftGain = audioContext.createGain();
     this.rightGain = audioContext.createGain();
-    this.leftGain.gain.value = config.volume;
-    this.rightGain.gain.value = config.volume;
+    // Start at 0 for smooth fade-in
+    this.leftGain.gain.value = 0;
+    this.rightGain.gain.value = 0;
 
     this.merger = audioContext.createChannelMerger(2);
     this.leftOsc.connect(this.leftGain);
@@ -53,8 +54,16 @@ export class CarrierLayerNode {
   start(): void {
     if (!this.isPlaying) {
       const now = this.audioContext.currentTime;
+      // Start oscillators first
       this.leftOsc.start(now);
       this.rightOsc.start(now);
+      // Fade in smoothly to prevent clicks (50ms fade-in)
+      this.leftGain.gain.cancelScheduledValues(now);
+      this.rightGain.gain.cancelScheduledValues(now);
+      this.leftGain.gain.setValueAtTime(0, now);
+      this.rightGain.gain.setValueAtTime(0, now);
+      this.leftGain.gain.linearRampToValueAtTime(this.config.volume, now + 0.05);
+      this.rightGain.gain.linearRampToValueAtTime(this.config.volume, now + 0.05);
       this.isPlaying = true;
     }
   }
@@ -62,8 +71,16 @@ export class CarrierLayerNode {
   stop(): void {
     if (this.isPlaying) {
       const now = this.audioContext.currentTime;
-      this.leftOsc.stop(now + 0.1);
-      this.rightOsc.stop(now + 0.1);
+      // Fade out smoothly before stopping (50ms fade-out)
+      this.leftGain.gain.cancelScheduledValues(now);
+      this.rightGain.gain.cancelScheduledValues(now);
+      this.leftGain.gain.setValueAtTime(this.leftGain.gain.value, now);
+      this.rightGain.gain.setValueAtTime(this.rightGain.gain.value, now);
+      this.leftGain.gain.linearRampToValueAtTime(0, now + 0.05);
+      this.rightGain.gain.linearRampToValueAtTime(0, now + 0.05);
+      // Stop oscillators after fade-out completes
+      this.leftOsc.stop(now + 0.06);
+      this.rightOsc.stop(now + 0.06);
       this.isPlaying = false;
     }
   }

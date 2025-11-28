@@ -182,8 +182,8 @@ class AudioEngine {
         
         // Start carrier with zero volume, then fade in smoothly to prevent clicks
         carrier.start();
-        // Very short fade-in (5ms) to eliminate clicks from phase discontinuities
-        gain.gain.rampTo(adjustedVolume, 0.005);
+        // Longer fade-in (50ms) to eliminate clicks from phase discontinuities
+        gain.gain.rampTo(adjustedVolume, 0.05);
         
         // Verify it actually started
         setTimeout(() => {
@@ -211,7 +211,8 @@ class AudioEngine {
         // Standard binaural beat generation
         // Use a carrier frequency in the audible range and create binaural beat
         const beatFreq = frequency.frequency; // The desired beat frequency (Hz)
-        const carrierFreq = 200; // Base frequency in audible range
+        // Use higher carrier for very high frequencies to avoid negative/zero leftFreq
+        const carrierFreq = beatFreq > 300 ? 500 : 200; // Base frequency in audible range
         
         // Create binaural beat: left and right differ by beatFreq
         // This creates the perception of the beat frequency in the brain
@@ -259,9 +260,9 @@ class AudioEngine {
         // Start oscillators with zero volume, then fade in smoothly to prevent clicks
         leftOsc.start();
         rightOsc.start();
-        // Very short fade-in (5ms) to eliminate clicks from phase discontinuities
-        leftGain.gain.rampTo(adjustedVolume, 0.005);
-        rightGain.gain.rampTo(adjustedVolume, 0.005);
+        // Longer fade-in (50ms) to eliminate clicks from phase discontinuities
+        leftGain.gain.rampTo(adjustedVolume, 0.05);
+        rightGain.gain.rampTo(adjustedVolume, 0.05);
         
         // Verify they actually started
         setTimeout(() => {
@@ -303,8 +304,13 @@ class AudioEngine {
     if (id.startsWith('gateway-')) {
       if (this.gatewayGenerator) {
         this.gatewayGenerator.stop();
-        this.gatewayGenerator.dispose();
-        this.gatewayGenerator = null;
+        // Wait for fade-out to complete before disposing (50ms fade-out + 10ms buffer)
+        setTimeout(() => {
+          if (this.gatewayGenerator) {
+            this.gatewayGenerator.dispose();
+            this.gatewayGenerator = null;
+          }
+        }, 60);
       }
       return;
     }
@@ -313,7 +319,7 @@ class AudioEngine {
     if (osc) {
       try {
         // Fade out smoothly to prevent clicks when stopping
-        const fadeOutTime = 0.01; // 10ms fade-out
+        const fadeOutTime = 0.05; // 50ms fade-out
         if (osc.carrier) {
           // Carrier modulation - single gain
           osc.gain.gain.rampTo(0, fadeOutTime);
@@ -419,8 +425,13 @@ class AudioEngine {
     // Stop Gateway generator
     if (this.gatewayGenerator) {
       this.gatewayGenerator.stop();
-      this.gatewayGenerator.dispose();
-      this.gatewayGenerator = null;
+      // Wait for fade-out to complete before disposing
+      setTimeout(() => {
+        if (this.gatewayGenerator) {
+          this.gatewayGenerator.dispose();
+          this.gatewayGenerator = null;
+        }
+      }, 60);
     }
 
     // Stop all Tone.js oscillators

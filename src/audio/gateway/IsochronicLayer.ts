@@ -41,7 +41,8 @@ export class IsochronicNode {
     const adjustedDepth = Math.min(adjustedCenter - minGain, maxGain - adjustedCenter);
     
     this.lfoGain.gain.value = adjustedDepth;
-    this.gain.gain.value = adjustedCenter;
+    // Start at 0 for smooth fade-in
+    this.gain.gain.value = 0;
 
     this.lfo.connect(this.lfoGain);
     this.lfoGain.connect(this.gain.gain);
@@ -55,8 +56,16 @@ export class IsochronicNode {
   start(): void {
     if (!this.isPlaying) {
       const now = this.audioContext.currentTime;
+      // Start oscillators first
       this.osc.start(now);
       this.lfo.start(now);
+      // Fade in smoothly to prevent clicks (50ms fade-in)
+      this.gain.gain.cancelScheduledValues(now);
+      const minGain = 0;
+      const maxGain = this.config.volume;
+      const adjustedCenter = minGain + (maxGain - minGain) * this.config.dutyCycle;
+      this.gain.gain.setValueAtTime(0, now);
+      this.gain.gain.linearRampToValueAtTime(adjustedCenter, now + 0.05);
       this.isPlaying = true;
     }
   }
@@ -64,8 +73,13 @@ export class IsochronicNode {
   stop(): void {
     if (this.isPlaying) {
       const now = this.audioContext.currentTime;
-      this.osc.stop(now + 0.1);
-      this.lfo.stop(now + 0.1);
+      // Fade out smoothly before stopping (50ms fade-out)
+      this.gain.gain.cancelScheduledValues(now);
+      this.gain.gain.setValueAtTime(this.gain.gain.value, now);
+      this.gain.gain.linearRampToValueAtTime(0, now + 0.05);
+      // Stop oscillators after fade-out completes
+      this.osc.stop(now + 0.06);
+      this.lfo.stop(now + 0.06);
       this.isPlaying = false;
     }
   }
