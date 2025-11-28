@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, Play, Pause, Info, Volume2, Square } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
-import { getFrequenciesByTag, getFrequencyById } from '../data/frequencies';
+import { getFrequenciesByTag } from '../data/frequencies';
 import { Frequency } from '../types';
 import { audioEngine } from '../audio/AudioEngine';
 import './GatewayMode.css';
@@ -14,7 +14,6 @@ const GatewayMode: React.FC = () => {
     setPlaying,
     currentFrequencies,
     isPlaying,
-    removeFrequency,
     masterVolume,
     setMasterVolume
   } = useAppStore();
@@ -26,14 +25,6 @@ const GatewayMode: React.FC = () => {
     return Array.from(currentFrequencies.values()).some(
       (f) => f.frequencyId === frequencyId && f.enabled
     );
-  };
-
-  // Get the active frequency ID for a given frequency
-  const getActiveFrequencyId = (frequencyId: string): string | null => {
-    const active = Array.from(currentFrequencies.values()).find(
-      (f) => f.frequencyId === frequencyId && f.enabled
-    );
-    return active ? active.id : null;
   };
 
   // Get currently playing Gateway frequency
