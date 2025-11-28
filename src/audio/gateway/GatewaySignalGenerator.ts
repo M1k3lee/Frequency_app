@@ -7,10 +7,8 @@ export class GatewaySignalGenerator {
   private carrierLayers: CarrierLayerNode[] = [];
   private isochronicLayers: IsochronicNode[] = [];
   private masterGain: GainNode;
-  private destination: AudioNode | null = null;
   private isInitialized: boolean = false;
   private isPlaying: boolean = false;
-  private config: GatewaySignalConfig | null = null;
 
   constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
@@ -22,7 +20,6 @@ export class GatewaySignalGenerator {
     if (this.isInitialized) {
       this.dispose();
     }
-    this.config = config;
 
     for (const layerConfig of config.carrierLayers) {
       const layer = new CarrierLayerNode(this.audioContext, layerConfig);
@@ -40,7 +37,6 @@ export class GatewaySignalGenerator {
   }
 
   connect(destination: AudioNode): void {
-    this.destination = destination;
     this.masterGain.connect(destination);
   }
 
@@ -88,6 +84,5 @@ export class GatewaySignalGenerator {
     } catch (e) {}
     this.isInitialized = false;
     this.isPlaying = false;
-    this.config = null;
   }
 }

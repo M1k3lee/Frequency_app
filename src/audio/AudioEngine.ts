@@ -16,7 +16,6 @@ class AudioEngine {
     pan: Tone.Panner;
   }> = new Map();
   private gatewayGenerator: GatewaySignalGenerator | null = null;
-  private webAudioContext: AudioContext | null = null;
   private isInitialized: boolean = false;
   private isReady: boolean = false;
 
