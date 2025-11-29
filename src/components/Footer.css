@@ -83,6 +83,13 @@
   font-style: italic;
 }
 
+.download-update-date {
+  margin: 0.5rem 0 0 0;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.75rem;
+  font-style: normal;
+}
+
 .footer-links {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

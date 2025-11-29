@@ -63,6 +63,7 @@ const Footer: React.FC = () => {
                   <span>Download Android App</span>
                 </a>
                 <p className="download-note">Direct APK download for Android devices</p>
+                <p className="download-update-date">Last updated on 29/11/2025 01:02am</p>
               </div>
             </div>
 
