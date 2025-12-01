@@ -122,6 +122,8 @@ const Footer: React.FC = () => {
           <div className="footer-meta">
             <p>&copy; {currentYear} Frequency Zen. All rights reserved.</p>
             <div className="footer-links-inline">
+              <a href="/technology" onClick={(e) => handleLinkClick('/technology', e)}>Advanced Technology</a>
+              <span>•</span>
               <a href="/privacy" onClick={(e) => handleLinkClick('/privacy', e)}>Privacy Policy</a>
               <span>•</span>
               <a href="/terms" onClick={(e) => handleLinkClick('/terms', e)}>Terms of Service</a>

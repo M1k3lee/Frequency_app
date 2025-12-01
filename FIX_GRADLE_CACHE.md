@@ -52,3 +52,6 @@ Then reopen Android Studio and let it sync.
 
 The cache corruption was caused by missing metadata files in the Gradle transform cache. Cleaning the cache will force Gradle to regenerate them.
 
+
+
+

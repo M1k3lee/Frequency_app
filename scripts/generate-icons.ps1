@@ -47,3 +47,6 @@ foreach ($density in $iconSizes.Keys) {
 
 Write-Host "Icons generated successfully!"
 
+
+
+

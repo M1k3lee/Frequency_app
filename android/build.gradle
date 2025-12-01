@@ -11,12 +11,37 @@ buildscript {
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+    
+    // Set SDK versions globally to ensure consistency
+    ext {
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        minSdkVersion = 23
+    }
 }
 
 allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+    
+    // Add dependency resolution strategy to fix AAR metadata conflicts
+    configurations.all {
+        resolutionStrategy {
+            // Prefer project modules
+            preferProjectModules()
+            
+            // Force consistent versions to avoid AAR metadata conflicts
+            // Force SDK 35 compatible versions
+            force 'androidx.appcompat:appcompat:1.6.1'
+            force 'androidx.core:core:1.12.0'           // Latest compatible with SDK 35
+            force 'androidx.core:core-ktx:1.12.0'       // Latest compatible with SDK 35
+            
+            // Cache dynamic versions for 10 minutes
+            cacheDynamicVersionsFor 10, 'minutes'
+            cacheChangingModulesFor 0, 'seconds'
+        }
     }
 }
 

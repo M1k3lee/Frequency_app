@@ -2,21 +2,45 @@ apply plugin: 'com.android.application'
 
 android {
     namespace "com.frequencyzen.app"
-    compileSdkVersion 34
+    compileSdkVersion 35
     defaultConfig {
-        applicationId "com.frequencyzen.app"
-        minSdkVersion 22
-        targetSdkVersion 34
-        versionCode 1
-        versionName "1.0.0"
+        applicationId "com.frequencyzen.app" // Must stay the same for updates
+        minSdkVersion 23 // Required by Google Play Services Ads (AdMob) - Android 6.0+
+        targetSdkVersion 35
+        versionCode 3 // Must increment for each update (Play Store requirement)
+        versionName "1.1.1" // User-visible version
     }
+    // Check if signing configuration is available before defining signingConfigs
+    def keystorePropertiesFile = rootProject.file("key.properties")
+    def signingConfigAvailable = false
+    def keystoreProperties = new Properties()
+    
+    if (keystorePropertiesFile.exists()) {
+        try {
+            keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+            def keystorePath = keystoreProperties['storeFile']
+            if (keystorePath && keystoreProperties['storePassword'] && 
+                keystoreProperties['keyAlias'] && keystoreProperties['keyPassword']) {
+                def keystoreFile = file(keystorePath)
+                if (keystoreFile.exists()) {
+                    signingConfigAvailable = true
+                }
+            }
+        } catch (Exception e) {
+            println "WARNING: Could not load key.properties: ${e.message}"
+        }
+    }
+    
     signingConfigs {
+        // IMPORTANT: For app updates to work, ALL release APKs must use the SAME signing key
+        // Users will get "installation conflict" errors if signing keys differ between versions
+        // Always use the same keystore file (freq.jks) for all release builds
+        // See ANDROID_UPDATE_GUIDE.md for more details
         release {
-            def keystorePropertiesFile = rootProject.file("key.properties")
-            def keystoreProperties = new Properties()
-            if (keystorePropertiesFile.exists()) {
-                keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-                storeFile file(keystoreProperties['storeFile'])
+            if (signingConfigAvailable) {
+                def keystorePath = keystoreProperties['storeFile']
+                def keystoreFile = file(keystorePath)
+                storeFile keystoreFile
                 storePassword keystoreProperties['storePassword']
                 keyAlias keystoreProperties['keyAlias']
                 keyPassword keystoreProperties['keyPassword']
@@ -30,7 +54,14 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            // Only use signing config if key.properties exists and is valid
+            if (signingConfigAvailable && signingConfigs.hasProperty('release')) {
+                signingConfig signingConfigs.release
+            } else {
+                // Build unsigned if key.properties not configured (not for production!)
+                println "WARNING: key.properties not found. Release build will be unsigned."
+                println "WARNING: Create key.properties for production signing. See QUICK_SIGNING_FIX.md"
+            }
         }
     }
     lintOptions {

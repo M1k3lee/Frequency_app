@@ -49,16 +49,13 @@ const GatewayMode: React.FC = () => {
 
     // If already playing, pause it by stopping all
     if (isFrequencyPlaying(freqId)) {
-      stopAll();
+      await stopAll();
       // stopAll() already sets isPlaying to false, no need to call setPlaying again
       return;
     }
 
-    // Stop all and play this one
-    stopAll();
-    
-    // Small delay to ensure cleanup
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Stop all and play this one - wait for fade-out to complete
+    await stopAll();
     
     const freq = gatewayFrequencies.find(f => f.id === freqId);
     if (freq) {
@@ -126,15 +123,13 @@ const GatewayMode: React.FC = () => {
                   
                   if (hasActiveFrequencies && isPlaying) {
                     // Pause - stop all frequencies
-                    stopAll();
+                    await stopAll();
                     // stopAll() already sets isPlaying to false, no need to call setPlaying again
                   } else {
                     // Resume - restart the current frequency
                     if (currentPlayingFreq) {
                       // Stop all first to ensure clean state
-                      stopAll();
-                      // Small delay to ensure cleanup
-                      await new Promise(resolve => setTimeout(resolve, 100));
+                      await stopAll();
                       // Restart the frequency
                       try {
                         if (!audioEngine.isReadyForPlayback()) {
@@ -154,9 +149,9 @@ const GatewayMode: React.FC = () => {
               </button>
               <button
                 className="gateway-stop-btn"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
-                  stopAll();
+                  await stopAll();
                   // stopAll() already sets isPlaying to false, no need to call setPlaying again
                 }}
                 aria-label="Stop"
@@ -168,7 +163,7 @@ const GatewayMode: React.FC = () => {
         )}
         
         <div className="gateway-intro">
-          <p>Explore the declassified frequencies from the Monroe Institute's Gateway Project. These experimental frequencies were used in consciousness exploration research.</p>
+          <p>Explore reconstructed multi-layer frequencies inspired by the Monroe Institute's Gateway Project. These signals are our reconstruction based on declassified documents describing the experiments. While we use multi-layer audio techniques (multiple carrier frequencies, isochronic tones, phase relationships), the exact proprietary Hemi-Sync specifications are not publicly available.</p>
         </div>
 
         <div className="gateway-frequencies">

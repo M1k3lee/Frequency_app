@@ -23,7 +23,7 @@ const MainControls: React.FC = () => {
   const handlePlayPause = async () => {
     if (actuallyPlaying) {
       // Pause - stop all frequencies
-      stopAll();
+      await stopAll();
       setPlaying(false);
     } else {
       // Quick start with a default frequency
@@ -43,7 +43,7 @@ const MainControls: React.FC = () => {
   ];
 
   const handleQuickSelect = async (freqId: string) => {
-    stopAll();
+    await stopAll();
     const freq = getFrequencyById(freqId);
     if (freq) {
       await addFrequency(freq);

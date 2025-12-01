@@ -421,23 +421,25 @@ class AudioEngine {
     return `gateway-${config.id}-${Date.now()}`;
   }
 
-  stopAll(): void {
+  async stopAll(): Promise<void> {
     // Stop Gateway generator
     if (this.gatewayGenerator) {
       this.gatewayGenerator.stop();
-      // Wait for fade-out to complete before disposing
-      setTimeout(() => {
-        if (this.gatewayGenerator) {
-          this.gatewayGenerator.dispose();
-          this.gatewayGenerator = null;
-        }
-      }, 60);
+      // Wait for fade-out to complete before disposing (50ms fade + 20ms buffer)
+      await new Promise(resolve => setTimeout(resolve, 70));
+      if (this.gatewayGenerator) {
+        this.gatewayGenerator.dispose();
+        this.gatewayGenerator = null;
+      }
     }
 
     // Stop all Tone.js oscillators
     this.activeOscillators.forEach((_, id) => {
       this.stopFrequency(id);
     });
+    
+    // Wait for all fade-outs to complete (50ms fade + 20ms buffer)
+    await new Promise(resolve => setTimeout(resolve, 70));
   }
 
   setVolume(id: string, volume: number): void {

@@ -41,7 +41,7 @@ interface AppState {
   addFrequency: (frequency: Frequency, volume?: number, pan?: number) => Promise<void>;
   removeFrequency: (id: string) => void;
   updateFrequency: (id: string, updates: Partial<ActiveFrequency>) => void;
-  stopAll: () => void;
+  stopAll: () => Promise<void>;
   setPlaying: (playing: boolean) => void;
   setMasterVolume: (volume: number) => void;
   addBackgroundSound: (sound: BackgroundSound, volume?: number) => Promise<void>;
@@ -191,8 +191,8 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      stopAll: () => {
-        audioEngine?.stopAll();
+      stopAll: async () => {
+        await audioEngine?.stopAll();
         set({
           currentFrequencies: new Map(),
           isPlaying: false,

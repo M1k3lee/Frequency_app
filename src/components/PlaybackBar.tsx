@@ -30,7 +30,8 @@ const PlaybackBar: React.FC = () => {
         setPlaybackTimerRemaining((prev) => {
           if (prev === null || prev <= 0) {
             setIsTimerActive(false);
-            stopAll();
+            // Stop all asynchronously when timer reaches 0
+            stopAll().catch(console.error);
             return 0;
           }
           return prev - 1;
@@ -39,8 +40,10 @@ const PlaybackBar: React.FC = () => {
 
       return () => clearInterval(interval);
     } else if (isTimerActive && playbackTimerRemaining === 0) {
-      stopAll();
-      setIsTimerActive(false);
+      (async () => {
+        await stopAll();
+        setIsTimerActive(false);
+      })();
     }
   }, [isTimerActive, playbackTimerRemaining, setPlaybackTimerRemaining, setIsTimerActive, stopAll]);
 
@@ -93,7 +96,7 @@ const PlaybackBar: React.FC = () => {
   const handlePlayPause = async () => {
     if (actuallyPlaying) {
       // Pause - stop all frequencies
-      stopAll();
+      await stopAll();
       setPlaying(false);
     } else {
       // Nothing playing - start with default
@@ -172,7 +175,7 @@ const PlaybackBar: React.FC = () => {
 
           <button
             className="playback-btn secondary"
-            onClick={stopAll}
+            onClick={async () => await stopAll()}
             aria-label="Stop all"
             title="Stop all"
           >

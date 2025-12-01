@@ -14,8 +14,11 @@
     "cap:open:ios": "cap open ios",
     "cap:run:android": "cap run android",
     "cap:run:ios": "cap run ios",
-    "cap:build:android": "npm run build:mobile && cap sync android && cd android && ./gradlew assembleDebug",
-    "cap:build:android:release": "npm run build:mobile && cap sync android && cd android && ./gradlew assembleRelease",
+    "cap:build:android": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat assembleDebug) else (./gradlew assembleDebug)",
+    "cap:build:android:release": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat assembleRelease) else (./gradlew assembleRelease)",
+    "android:update-version": "node scripts/update-android-version.js",
+    "android:check-keystore": "node scripts/check-keystore.js",
+    "postinstall": "node scripts/fix-admob-sdk35.js",
     "check:setup": "node scripts/check-setup.js",
     "icons:generate": "node scripts/create-app-icons.js"
   },

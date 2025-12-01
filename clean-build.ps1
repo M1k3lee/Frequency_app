@@ -9,3 +9,6 @@ if (Test-Path "android\.gradle") { Remove-Item -Path "android\.gradle" -Recurse 
 
 Write-Host "Clean complete! Now reopen Android Studio and sync." -ForegroundColor Green
 
+
+
+

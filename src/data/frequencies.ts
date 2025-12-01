@@ -41,7 +41,7 @@ export const frequencies: Frequency[] = [
         'Improved access to subconscious mind',
         'Better sleep and dream recall'
       ],
-      notes: 'The 4.5Hz theta frequency was one of the most important frequencies in Gateway Project. It represents the "gateway" between normal consciousness and altered states. The signal uses enhanced Hemi-Sync with 3 carrier pairs and specific phase relationships optimized for deep theta entrainment. The CIA document notes that mastery of this frequency was "essential for all subsequent training."'
+      notes: 'Based on declassified Gateway Project documents, the 4.5Hz theta frequency was one of the most important frequencies in the experiments. This is our reconstruction of a multi-layer signal using 3 carrier pairs and specific phase relationships. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, mastery of this frequency was "essential for all subsequent training."'
     }
   },
   {
@@ -82,7 +82,7 @@ export const frequencies: Frequency[] = [
         'Better integration of conscious and subconscious thinking',
         'Foundation for advanced creative state work'
       ],
-      notes: 'The 6Hz theta frequency was used in Gateway Project for accessing creative states. While not as complex as the advanced Focus signals, this frequency was effective for enhancing creativity and intuitive problem-solving. The signal uses standard Hemi-Sync binaural beats with 2 carrier pairs and 1 isochronic layer.'
+      notes: 'Based on declassified Gateway Project documents, the 6Hz theta frequency was used for accessing creative states. This is our reconstruction using multi-layer audio techniques with 2 carrier pairs and 1 isochronic layer. The exact proprietary Hemi-Sync specifications are not publicly available.'
     }
   },
   {
@@ -126,7 +126,7 @@ export const frequencies: Frequency[] = [
         'Improved sleep quality and recovery',
         'Foundation for advanced healing work'
       ],
-      notes: 'The 3.5Hz deep theta frequency was found to be optimal for accessing the body\'s natural healing mechanisms. The Gateway Project used enhanced Hemi-Sync signals with 3 carrier pairs and specific phase relationships to create optimal conditions for deep healing. The CIA document notes that this frequency "appears to facilitate communication between conscious awareness and the body\'s healing systems." Subjects often reported feeling "guided" to areas needing healing.'
+      notes: 'Based on declassified Gateway Project documents, the 3.5Hz deep theta frequency was used for healing protocols. This is our reconstruction using multi-layer audio techniques with 3 carrier pairs and specific phase relationships. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency "appears to facilitate communication between conscious awareness and the body\'s healing systems."'
     }
   },
   {
@@ -167,7 +167,7 @@ export const frequencies: Frequency[] = [
         'Foundation for advanced state work requiring awareness',
         'Better integration of conscious and subconscious processes'
       ],
-      notes: 'The 5Hz theta frequency was used in Gateway Project for achieving balanced states. This frequency allows subjects to access deep meditation while maintaining awareness, making it ideal for training and state transitions. The signal uses standard Hemi-Sync binaural beats optimized for balanced entrainment.'
+      notes: 'Based on declassified Gateway Project documents, the 5Hz theta frequency was used for achieving balanced states. This is our reconstruction using multi-layer audio techniques optimized for balanced entrainment. The exact proprietary Hemi-Sync specifications are not publicly available.'
     }
   },
   {
@@ -234,7 +234,7 @@ export const frequencies: Frequency[] = [
         'Enhanced learning and information retention',
         'Baseline state for accessing deeper frequencies'
       ],
-      notes: 'The 10Hz alpha frequency is the Schumann resonance - Earth\'s natural electromagnetic frequency. This frequency was used extensively in Gateway Project as a foundational training frequency. The signal uses standard Hemi-Sync binaural beats with 2 carrier pairs, creating a natural resonance that aligns with Earth\'s frequency. The CIA document notes this frequency was "essential for initial training and stress reduction." Many subjects reported feeling a natural connection to this frequency.'
+      notes: 'Based on declassified Gateway Project documents, the 10Hz alpha frequency (Schumann resonance) was used as a foundational training frequency. This is our reconstruction using multi-layer audio techniques with 2 carrier pairs. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency was "essential for initial training and stress reduction."'
     }
   },
   {
@@ -278,7 +278,7 @@ export const frequencies: Frequency[] = [
         'Foundation for advanced Gateway state work',
         'Reduced disorientation during state transitions'
       ],
-      notes: 'The 8Hz alpha frequency was used in Gateway Project as a bridge between alpha (relaxed awareness) and theta (deep meditation) states. This frequency is particularly important for accessing Focus 12 states, as it allows subjects to maintain awareness while entering deeper states. The signal uses enhanced Hemi-Sync with 3 carrier pairs and specific phase relationships optimized for state bridging. The CIA document notes this frequency was "critical for safe progression to advanced states."'
+      notes: 'Based on declassified Gateway Project documents, the 8Hz alpha frequency was used as a bridge between alpha and theta states for accessing Focus 12. This is our reconstruction using multi-layer audio techniques with 3 carrier pairs and specific phase relationships. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency was "critical for safe progression to advanced states."'
     }
   },
   {
@@ -565,7 +565,7 @@ export const frequencies: Frequency[] = [
         'Reduced side effects from advanced state work',
         'Measurable improvements in physiological stability markers'
       ],
-      notes: 'The 7.83Hz Schumann Resonance was considered essential for Gateway Project protocols. The multi-layer Hemi-Sync signal structure uses 4 carrier pairs with stabilizing phase relationships to create optimal grounding conditions. Unlike simple binaural beats, this signal uses multiple layers to enhance the grounding effect. It represents the Earth\'s natural frequency and was found to help subjects "ground" their consciousness after exploring non-physical states. The CIA document notes this frequency was "critical for subject safety and protocol completion."'
+      notes: 'Based on declassified Gateway Project documents, the 7.83Hz Schumann Resonance (Earth\'s natural frequency) was considered essential for grounding protocols. This is our reconstruction using multi-layer audio techniques with 4 carrier pairs and stabilizing phase relationships. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency was "critical for subject safety and protocol completion."'
     }
   },
   {
@@ -581,7 +581,7 @@ export const frequencies: Frequency[] = [
     effects: ['Expanded awareness', 'Out-of-body preparation', 'Consciousness expansion', 'Gateway state'],
     recommendedDuration: 45,
     experimentalData: {
-      methodology: 'Advanced Hemi-Sync protocols using complex multi-layer signal structure. The signal employs 7 carrier frequency pairs (100Hz/104Hz, 200Hz/204Hz, 150Hz/154Hz, 300Hz/304Hz, 250Hz/254Hz, 400Hz/404Hz, 500Hz/504Hz) all creating a 4Hz theta beat, plus 3 isochronic tone layers. Phase relationships between layers create specific entrainment patterns. Subjects first achieved Focus 10, then transitioned to Focus 12. Sessions typically 45-60 minutes with continuous EEG monitoring.',
+      methodology: 'Based on declassified Gateway Project documents, Focus 12 used advanced Hemi-Sync protocols with complex multi-layer signal structures. Our reconstruction employs 7 carrier frequency pairs (100Hz/104Hz, 200Hz/204Hz, 150Hz/154Hz, 300Hz/304Hz, 250Hz/254Hz, 400Hz/404Hz, 500Hz/504Hz) creating a 4Hz theta beat, plus 3 isochronic tone layers. The exact proprietary specifications are not publicly available. According to declassified documents, subjects first achieved Focus 10, then transitioned to Focus 12. Sessions typically 45-60 minutes with continuous EEG monitoring.',
       testSubjects: 'Advanced practitioners who had successfully mastered Focus 10. Approximately 60% of Focus 10 graduates achieved Focus 12. Subjects underwent extensive training and mental preparation.',
       hemiSyncSpecs: {
         targetBeatFrequency: '4.0 Hz (theta)',
@@ -614,7 +614,7 @@ export const frequencies: Frequency[] = [
         'Foundation for remote viewing and non-local consciousness experiments',
         'Significantly higher accuracy in remote viewing tasks (67% vs 23% in normal state)'
       ],
-      notes: 'Focus 12 was critical for Gateway Project\'s remote viewing experiments. The multi-layer Hemi-Sync signal structure creates optimal conditions for consciousness expansion. Unlike simple binaural beats, this signal uses 7 carrier pairs with complex phase relationships and 3 isochronic layers working simultaneously. Subjects in Focus 12 showed significantly higher accuracy in remote viewing tasks compared to normal consciousness states. The signal complexity was specifically designed to maintain high-frequency awareness (gamma) while accessing theta-level consciousness.'
+      notes: 'Based on declassified Gateway Project documents, Focus 12 was critical for remote viewing experiments. This is our reconstruction of a multi-layer signal using 7 carrier pairs with complex phase relationships and 3 isochronic layers. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified documents, subjects in Focus 12 showed significantly higher accuracy in remote viewing tasks compared to normal consciousness states.'
     }
   },
   {
@@ -662,7 +662,7 @@ export const frequencies: Frequency[] = [
         'Foundation for accessing deeper Focus states (12, 15, 21, 27)',
         'Measurable improvements in hemispheric synchronization (EEG coherence)'
       ],
-      notes: 'Focus 10 was considered the "gateway" to all other states. The multi-layer Hemi-Sync signal structure was specifically designed to create optimal entrainment conditions. Unlike simple binaural beats, this signal uses 6 carrier pairs with phase relationships and isochronic tones working simultaneously. Subjects who mastered Focus 10 showed significantly better results in advanced states. The CIA document notes that this frequency was "essential for all subsequent training."'
+      notes: 'Based on declassified Gateway Project documents, Focus 10 was considered the "gateway" to all other states. This is our reconstruction of a multi-layer signal using 6 carrier pairs with phase relationships and isochronic tones. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency was "essential for all subsequent training."'
     }
   },
   {
@@ -712,7 +712,7 @@ export const frequencies: Frequency[] = [
         'Some subjects demonstrated ability to "view" events in different time periods',
         'Measurable changes in temporal perception (verified through time estimation tests)'
       ],
-      notes: 'Focus 15 experiments were controversial but showed consistent patterns. The multi-layer Hemi-Sync signal structure creates a unique bridge between active beta consciousness and deep theta states, allowing access to temporal information. The 8 carrier layers with specific phase relationships create optimal conditions for this state. Unlike simple binaural beats, this signal uses sophisticated phase distribution and multiple isochronic layers. Subjects required strong mental discipline to navigate this state safely.'
+      notes: 'Based on declassified Gateway Project documents, Focus 15 experiments explored "timelessness" states. This is our reconstruction of a multi-layer signal using 8 carrier pairs with complex phase relationships and 3 isochronic layers. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified documents, subjects required strong mental discipline to navigate this state safely.'
     }
   },
   {
@@ -766,7 +766,7 @@ export const frequencies: Frequency[] = [
         'Some subjects demonstrated ability to affect physical systems through consciousness',
         'Measurable changes in energy field perception (subjective but consistent)'
       ],
-      notes: 'Focus 21 represented a significant leap in consciousness capabilities. The multi-layer Hemi-Sync signal structure uses 12 carrier pairs with ultra-complex phase relationships and 5 isochronic layers - representing 20+ entrainment techniques working simultaneously. This is far beyond simple binaural beats. The signal was specifically designed to bridge beta (active consciousness) with deeper states, allowing subjects to maintain awareness while accessing energy manipulation capabilities. The complexity of this signal requires sophisticated DSP processing. Results were highly variable between subjects, suggesting individual aptitude plays a significant role.'
+      notes: 'Based on declassified Gateway Project documents, Focus 21 represented a significant leap in consciousness capabilities. This is our reconstruction of a multi-layer signal using 12 carrier pairs with ultra-complex phase relationships and 5 isochronic layers. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified documents, this state was used for energy work and consciousness interaction, requiring sophisticated signal processing.'
     }
   },
   {
@@ -823,7 +823,7 @@ export const frequencies: Frequency[] = [
         'Some subjects reported life-changing spiritual insights',
         'Measurable changes in worldview and consciousness perspective (long-term follow-up studies)'
       ],
-      notes: 'Focus 27 was the most controversial and profound state explored. The multi-layer Hemi-Sync signal structure uses 15 carrier pairs with maximum complexity phase relationships and 6 isochronic layers - representing 21+ entrainment techniques working simultaneously. This is the most complex signal in the Gateway program and far exceeds simple binaural beats. The signal was specifically designed to maintain the highest level of conscious awareness (gamma at 27Hz) while accessing the deepest levels of consciousness (delta-theta at 3.5Hz). This simultaneous high-low frequency dominance is extremely rare and requires sophisticated signal processing. Results were highly subjective but showed consistent patterns across subjects. The CIA document notes that this state required "extreme caution" and "thorough mental preparation." Many subjects reported this as the most significant experience of their lives.'
+      notes: 'Based on declassified Gateway Project documents, Focus 27 was the most advanced and profound state explored. This is our reconstruction of a multi-layer signal using 15 carrier pairs with maximum complexity phase relationships and 6 isochronic layers. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this state required "extreme caution" and "thorough mental preparation." Many subjects reportedly found this to be a profound experience.'
     }
   },
   {
@@ -852,7 +852,7 @@ export const frequencies: Frequency[] = [
         'Enhanced emotional processing and trauma release',
         'Improved sleep quality and recovery'
       ],
-      notes: 'The 3.5Hz deep theta frequency was found to be optimal for accessing the body\'s natural healing mechanisms. The CIA document notes that this frequency "appears to facilitate communication between conscious awareness and the body\'s healing systems." Subjects often reported feeling "guided" to areas needing healing.'
+      notes: 'Based on declassified Gateway Project documents, the 3.5Hz deep theta frequency was used for healing protocols. This is our reconstruction using multi-layer audio techniques. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency "appears to facilitate communication between conscious awareness and the body\'s healing systems."'
     }
   },
   {
@@ -881,7 +881,7 @@ export const frequencies: Frequency[] = [
         'Enhanced ability to maintain awareness during state changes',
         'Improved overall Gateway Project success rates'
       ],
-      notes: 'The 11.5Hz frequency was discovered to create a "bridge" between alpha and theta brainwave states. This was crucial for Gateway Project as subjects needed to smoothly transition between different Focus levels. The CIA document notes this frequency "significantly improved protocol success rates and subject comfort."'
+      notes: 'Based on declassified Gateway Project documents, the 11.5Hz frequency was used to create a "bridge" between alpha and theta brainwave states for smooth transitions between Focus levels. This is our reconstruction using multi-layer audio techniques. The exact proprietary Hemi-Sync specifications are not publicly available. According to the declassified CIA document, this frequency "significantly improved protocol success rates and subject comfort."'
     }
   },
 

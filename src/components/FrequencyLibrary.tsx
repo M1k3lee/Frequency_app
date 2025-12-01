@@ -58,11 +58,8 @@ const FrequencyLibrary: React.FC = () => {
       return;
     }
     
-    // Prevent duplicate playback - stop all first
-    stopAll();
-    
-    // Small delay to ensure cleanup
-    await new Promise(resolve => setTimeout(resolve, 50));
+    // Prevent duplicate playback - stop all first and wait for fade-out
+    await stopAll();
     
     // Then play the selected frequency
     await addFrequency(frequency);

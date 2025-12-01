@@ -43,8 +43,8 @@ const AdvancedPanel: React.FC = () => {
         setPlaybackTimerRemaining(durationSeconds);
         setIsTimerActive(true);
         
-        setTimeout(() => {
-          stopAll();
+        setTimeout(async () => {
+          await stopAll();
           setPlaybackTimer(null);
           setPlaybackTimerRemaining(null);
           setIsTimerActive(false);
@@ -84,9 +84,9 @@ const AdvancedPanel: React.FC = () => {
     alert('Mix saved!');
   };
 
-  const handleClearAll = () => {
+  const handleClearAll = async () => {
     if (confirm('Clear all frequencies?')) {
-      stopAll();
+      await stopAll();
     }
   };
 

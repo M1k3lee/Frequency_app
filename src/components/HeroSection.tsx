@@ -57,7 +57,7 @@ const HeroSection: React.FC = () => {
     // Master control - pause/resume whatever is currently playing
     if (isPlaying && currentFrequencies.size > 0) {
       // Pause all currently playing frequencies
-      stopAll();
+      await stopAll();
       setPlaying(false);
     } else if (currentFrequencies.size > 0) {
       // Resume if there are frequencies but not playing
@@ -67,7 +67,7 @@ const HeroSection: React.FC = () => {
       // Nothing playing - start with default alpha frequency
       const defaultFreq = getFrequencyById('alpha-10');
       if (defaultFreq) {
-        stopAll(); // Ensure clean state
+        await stopAll(); // Ensure clean state
         await addFrequency(defaultFreq);
         setPlaying(true);
       }
@@ -75,7 +75,7 @@ const HeroSection: React.FC = () => {
   };
 
   const handleModeSelect = async (freqId: string) => {
-    stopAll();
+    await stopAll();
     const freq = getFrequencyById(freqId);
     if (freq) {
       await addFrequency(freq);
@@ -86,7 +86,7 @@ const HeroSection: React.FC = () => {
   const handleFrequencySelect = async (freqId?: string) => {
     const idToUse = freqId || selectedFreq;
     if (!idToUse) return;
-    stopAll();
+    await stopAll();
     const freq = getFrequencyById(idToUse);
     if (freq) {
       await addFrequency(freq);

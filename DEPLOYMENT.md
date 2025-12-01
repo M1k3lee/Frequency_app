@@ -87,3 +87,6 @@ If you want to use a custom domain:
 - The build uses the production base path: `/Frequency_app/`
 - All static assets (images, fonts, etc.) will work correctly with this setup
 
+
+
+
