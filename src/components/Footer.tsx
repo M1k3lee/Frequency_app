@@ -92,11 +92,9 @@ const Footer: React.FC = () => {
         
         {isMobile && (
           <div className="footer-mobile">
-            <div className="footer-brand-mobile">
-              <h3>Frequency Zen</h3>
-            </div>
             <div className="footer-links-mobile">
-              {articleCategories.map((category, index) => (
+              {/* Only show "Learn About Frequencies" category for mobile app */}
+              {articleCategories.filter(category => category.title === 'Learn About Frequencies').map((category, index) => (
                 <div key={index} className="footer-category-mobile">
                   <h4>{category.title}</h4>
                   <ul>
@@ -115,26 +113,35 @@ const Footer: React.FC = () => {
                 </div>
               ))}
             </div>
+            {/* Minimal footer bottom for mobile app - just copyright and disclaimer */}
+            <div className="footer-bottom-mobile">
+              <p className="footer-copyright-mobile">&copy; {currentYear} Frequency Zen</p>
+              <p className="footer-disclaimer-mobile">
+                Not a medical device. Consult a healthcare professional for medical advice.
+              </p>
+            </div>
           </div>
         )}
 
-        <div className="footer-bottom">
-          <div className="footer-meta">
-            <p>&copy; {currentYear} Frequency Zen. All rights reserved.</p>
-            <div className="footer-links-inline">
-              <a href="/technology" onClick={(e) => handleLinkClick('/technology', e)}>Advanced Technology</a>
-              <span>•</span>
-              <a href="/privacy" onClick={(e) => handleLinkClick('/privacy', e)}>Privacy Policy</a>
-              <span>•</span>
-              <a href="/terms" onClick={(e) => handleLinkClick('/terms', e)}>Terms of Service</a>
-              <span>•</span>
-              <a href="/about" onClick={(e) => handleLinkClick('/about', e)}>About</a>
+        {!isMobile && (
+          <div className="footer-bottom">
+            <div className="footer-meta">
+              <p>&copy; {currentYear} Frequency Zen. All rights reserved.</p>
+              <div className="footer-links-inline">
+                <a href="/technology" onClick={(e) => handleLinkClick('/technology', e)}>Advanced Technology</a>
+                <span>•</span>
+                <a href="/privacy" onClick={(e) => handleLinkClick('/privacy', e)}>Privacy Policy</a>
+                <span>•</span>
+                <a href="/terms" onClick={(e) => handleLinkClick('/terms', e)}>Terms of Service</a>
+                <span>•</span>
+                <a href="/about" onClick={(e) => handleLinkClick('/about', e)}>About</a>
+              </div>
             </div>
+            <p className="footer-disclaimer">
+              Frequency Zen is not a medical device. Individual experiences may vary. Consult a healthcare professional for medical advice.
+            </p>
           </div>
-          <p className="footer-disclaimer">
-            Frequency Zen is not a medical device. Individual experiences may vary. Consult a healthcare professional for medical advice.
-          </p>
-        </div>
+        )}
       </div>
     </footer>
   );

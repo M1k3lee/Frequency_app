@@ -265,6 +265,30 @@
   border-color: rgba(100, 50, 150, 0.5);
 }
 
+.footer-bottom-mobile {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-copyright-mobile {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.footer-disclaimer-mobile {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.7rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
 @media (max-width: 640px) {
   .footer-links {
     grid-template-columns: 1fr;
