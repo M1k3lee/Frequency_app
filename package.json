@@ -18,7 +18,7 @@
     "cap:build:android:release": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat assembleRelease) else (./gradlew assembleRelease)",
     "android:update-version": "node scripts/update-android-version.js",
     "android:check-keystore": "node scripts/check-keystore.js",
-    "postinstall": "node scripts/fix-admob-sdk35.js",
+    "postinstall": "node scripts/fix-admob-sdk35.cjs",
     "check:setup": "node scripts/check-setup.js",
     "icons:generate": "node scripts/create-app-icons.js"
   },
