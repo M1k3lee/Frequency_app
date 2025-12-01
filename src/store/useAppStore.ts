@@ -59,7 +59,7 @@ interface AppState {
   saveToPlaylist: (name: string, frequencyIds: string[]) => void;
   removePlaylist: (id: string) => void;
   saveMix: (mix: Omit<AudioMix, 'id' | 'createdAt'>) => void;
-  loadMix: (id: string) => void;
+  loadMix: (id: string) => Promise<void>;
   removeMix: (id: string) => void;
   saveSequence: (sequence: Omit<FrequencySequence, 'id' | 'createdAt'>) => void;
   playSequence: (sequence: FrequencySequence) => Promise<void>;
@@ -336,12 +336,12 @@ export const useAppStore = create<AppState>()(
         }));
       },
 
-      loadMix: (id: string) => {
+      loadMix: async (id: string) => {
         const state = get();
         const mix = state.savedMixes.find(m => m.id === id);
         if (!mix) return;
 
-        state.stopAll();
+        await state.stopAll();
         
         mix.frequencies.forEach(async (freq) => {
           if (freq.enabled) {
@@ -388,7 +388,7 @@ export const useAppStore = create<AppState>()(
 
       playSequence: async (sequence: FrequencySequence) => {
         const state = get();
-        state.stopAll();
+        await state.stopAll();
         state.stopSequence();
         
         set({ 
@@ -401,7 +401,7 @@ export const useAppStore = create<AppState>()(
         const playStep = async (stepIndex: number) => {
           if (stepIndex >= sequence.steps.length) {
             // Sequence complete
-            state.stopAll();
+            await state.stopAll();
             set({ currentSequence: null, currentSequenceStep: 0, isPlaying: false });
             return;
           }
@@ -416,7 +416,7 @@ export const useAppStore = create<AppState>()(
           }
 
           // Stop all and play this frequency
-          state.stopAll();
+          await state.stopAll();
           await state.addFrequency(frequency, step.volume || 0.7, step.pan || 0);
           
           set({ currentSequenceStep: stepIndex });
@@ -443,15 +443,17 @@ export const useAppStore = create<AppState>()(
                 fadeStep++;
                 if (fadeStep >= fadeSteps) {
                   clearInterval(fadeTimer);
-                  state.stopAll();
-                  // Start next step
-                  playStep(stepIndex + 1);
+                  // Stop all asynchronously, then start next step
+                  state.stopAll().then(() => {
+                    playStep(stepIndex + 1);
+                  }).catch(console.error);
                 }
               }, fadeInterval);
             } else {
               // Last step, just stop
-              state.stopAll();
-              set({ currentSequence: null, currentSequenceStep: 0, isPlaying: false });
+              state.stopAll().then(() => {
+                set({ currentSequence: null, currentSequenceStep: 0, isPlaying: false });
+              }).catch(console.error);
             }
           }, durationMs);
 
