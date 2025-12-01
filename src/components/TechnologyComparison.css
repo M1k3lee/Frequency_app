@@ -1,0 +1,349 @@
+.technology-page {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.technology-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(100, 50, 150, 0.3);
+  border: 1px solid rgba(100, 50, 150, 0.5);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.back-button:hover {
+  background: rgba(100, 50, 150, 0.5);
+  border-color: rgba(100, 50, 150, 0.8);
+  transform: translateX(-2px);
+}
+
+.technology-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.technology-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, rgba(100, 50, 150, 1), rgba(150, 100, 200, 1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.technology-subtitle {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.technology-intro {
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Comparison Section */
+.comparison-section {
+  margin-bottom: 4rem;
+}
+
+.comparison-section h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.comparison-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.comparison-header {
+  display: contents;
+}
+
+.comparison-row {
+  display: contents;
+}
+
+.comparison-cell {
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(100, 50, 150, 0.2);
+}
+
+.comparison-row:last-child .comparison-cell {
+  border-bottom: none;
+}
+
+.comparison-cell:not(:last-child) {
+  border-right: 1px solid rgba(100, 50, 150, 0.2);
+}
+
+.feature-header,
+.standard-header,
+.advanced-header {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.feature-header {
+  background: rgba(100, 50, 150, 0.2);
+  color: rgba(100, 50, 150, 1);
+}
+
+.standard-header {
+  background: rgba(150, 50, 50, 0.2);
+  color: rgba(255, 150, 150, 1);
+}
+
+.advanced-header {
+  background: rgba(50, 150, 50, 0.2);
+  color: rgba(150, 255, 150, 1);
+}
+
+.feature-label {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.standard-value {
+  color: rgba(255, 150, 150, 0.9);
+  text-align: center;
+}
+
+.advanced-value {
+  color: rgba(150, 255, 150, 0.9);
+  text-align: center;
+  font-weight: 500;
+}
+
+/* Technical Details */
+.technical-details {
+  margin-bottom: 4rem;
+}
+
+.technical-details h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.feature-detail {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.feature-detail:hover {
+  border-color: rgba(100, 50, 150, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.feature-icon {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  color: rgba(100, 50, 150, 1);
+}
+
+.feature-content {
+  flex: 1;
+}
+
+.feature-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.feature-content p {
+  margin-bottom: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.feature-content strong {
+  color: rgba(100, 50, 150, 1);
+}
+
+.tech-list {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.8;
+}
+
+.tech-list li {
+  margin-bottom: 0.5rem;
+}
+
+.feature-content code {
+  background: rgba(100, 50, 150, 0.2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  color: rgba(150, 100, 200, 1);
+  font-size: 0.9em;
+}
+
+/* Why It Matters */
+.why-it-matters {
+  margin-bottom: 4rem;
+}
+
+.why-it-matters h2 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: rgba(100, 50, 150, 1);
+  text-align: center;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.benefit-card {
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.benefit-card:hover {
+  border-color: rgba(100, 50, 150, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(100, 50, 150, 0.2);
+}
+
+.benefit-card h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.benefit-card p {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Technical Note */
+.technical-note {
+  margin-bottom: 2rem;
+}
+
+.note-box {
+  padding: 2rem;
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.4);
+  border-radius: 12px;
+  border-left: 4px solid rgba(100, 50, 150, 1);
+}
+
+.note-box h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.note-box p {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
+}
+
+.note-box p:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .technology-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .technology-subtitle {
+    font-size: 1rem;
+  }
+
+  .comparison-table {
+    grid-template-columns: 1fr;
+    font-size: 0.9rem;
+  }
+
+  .comparison-cell:not(:last-child) {
+    border-right: none;
+  }
+
+  .comparison-cell {
+    padding: 1rem;
+  }
+
+  .feature-detail {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .feature-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .technology-intro {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+
+
+
