@@ -13,6 +13,8 @@ import PlaybackBar from './components/PlaybackBar';
 import AdMobNativeAd from './components/AdMobNativeAd';
 import Footer from './components/Footer';
 import Article from './components/Article';
+import TechnologyComparison from './components/TechnologyComparison';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import './App.css';
 
 function AppContent() {
@@ -20,16 +22,22 @@ function AppContent() {
   usePageTracking();
   const { showAdvanced, showGateway, showBreathing } = useAppStore();
   const location = useLocation();
-  const isArticlePage = location.pathname.startsWith('/articles');
+  const isStandalonePage = location.pathname.startsWith('/articles') || 
+                           location.pathname.startsWith('/technology') ||
+                           location.pathname.startsWith('/privacy') ||
+                           location.pathname.startsWith('/terms') ||
+                           location.pathname.startsWith('/about');
 
   return (
     <div className="app">
-      {!isArticlePage && <VisualCanvas />}
+      {!isStandalonePage && <VisualCanvas />}
       
       <div className="app-content">
         <AppHeader />
         <Routes>
           <Route path="/articles/:slug" element={<Article />} />
+          <Route path="/technology" element={<><TechnologyComparison /><Footer /></>} />
+          <Route path="/privacy" element={<><PrivacyPolicy /><Footer /></>} />
           <Route path="*" element={
             <>
               {showAdvanced ? (
@@ -49,7 +57,7 @@ function AppContent() {
             </>
           } />
         </Routes>
-        {!isArticlePage && <PlaybackBar />}
+        {!isStandalonePage && <PlaybackBar />}
       </div>
     </div>
   );

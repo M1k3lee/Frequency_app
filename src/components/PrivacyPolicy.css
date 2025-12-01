@@ -1,0 +1,299 @@
+.privacy-page {
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: white;
+  position: relative;
+  z-index: 1;
+}
+
+.privacy-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(100, 50, 150, 0.3);
+  border: 1px solid rgba(100, 50, 150, 0.5);
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.back-button:hover {
+  background: rgba(100, 50, 150, 0.5);
+  border-color: rgba(100, 50, 150, 0.8);
+  transform: translateX(-2px);
+}
+
+.privacy-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.privacy-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: rgba(100, 50, 150, 0.3);
+  border-radius: 50%;
+  margin-bottom: 1.5rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.privacy-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, rgba(100, 50, 150, 1), rgba(150, 100, 200, 1));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.privacy-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.privacy-intro {
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.privacy-intro p {
+  margin-bottom: 1rem;
+}
+
+.privacy-intro p:last-child {
+  margin-bottom: 0;
+}
+
+/* Privacy Sections */
+.privacy-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.privacy-section:hover {
+  border-color: rgba(100, 50, 150, 0.6);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(100, 50, 150, 0.3);
+}
+
+.section-header svg {
+  color: rgba(100, 50, 150, 1);
+  flex-shrink: 0;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+  color: rgba(100, 50, 150, 1);
+  margin: 0;
+}
+
+.section-content {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.section-content h3 {
+  font-size: 1.3rem;
+  color: rgba(100, 50, 150, 1);
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.section-content h3:first-child {
+  margin-top: 0;
+}
+
+.section-content p {
+  margin-bottom: 1rem;
+}
+
+.section-content ul {
+  margin: 1rem 0;
+  padding-left: 2rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.section-content ul ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.section-content li {
+  margin-bottom: 0.75rem;
+  line-height: 1.7;
+}
+
+.section-content strong {
+  color: rgba(100, 50, 150, 1);
+}
+
+.section-content a {
+  color: rgba(150, 100, 200, 1);
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.section-content a:hover {
+  color: rgba(200, 150, 255, 1);
+}
+
+/* Third-Party Services */
+.third-party-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.third-party-item {
+  padding: 1.5rem;
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 8px;
+}
+
+.third-party-item h3 {
+  font-size: 1.2rem;
+  color: rgba(100, 50, 150, 1);
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.third-party-item p {
+  margin-bottom: 0.75rem;
+}
+
+/* Contact Information */
+.contact-info {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.3);
+  border-radius: 8px;
+}
+
+.contact-info p {
+  margin-bottom: 1rem;
+}
+
+.contact-info p:last-child {
+  margin-bottom: 0;
+}
+
+/* Privacy Note */
+.privacy-note {
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+}
+
+.note-box {
+  padding: 2rem;
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.4);
+  border-radius: 12px;
+  border-left: 4px solid rgba(100, 50, 150, 1);
+}
+
+.note-box h3 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: rgba(100, 50, 150, 1);
+}
+
+.note-box p {
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 1rem;
+}
+
+.note-box p:last-child {
+  margin-bottom: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .privacy-page {
+    padding: 1rem 0.5rem;
+  }
+
+  .privacy-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .privacy-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .privacy-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .privacy-intro {
+    padding: 1.5rem;
+    font-size: 1rem;
+  }
+
+  .privacy-section {
+    padding: 1.5rem;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .section-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .section-content ul {
+    padding-left: 1.5rem;
+  }
+
+  .third-party-item {
+    padding: 1rem;
+  }
+
+  .note-box {
+    padding: 1.5rem;
+  }
+}
+
