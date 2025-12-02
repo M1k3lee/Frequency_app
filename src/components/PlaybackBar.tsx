@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Play, Pause, Volume2, Timer, Save, Square, Clock } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById } from '../data/frequencies';
+import AdvancedFrequencyControls from './AdvancedFrequencyControls';
 import './PlaybackBar.css';
 
 const PlaybackBar: React.FC = () => {
@@ -221,6 +222,13 @@ const PlaybackBar: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Advanced frequency controls - only shows for Gateway frequencies */}
+      {currentPlayingFreq?.isGatewaySignal && (
+        <div className="playback-bar-advanced">
+          <AdvancedFrequencyControls frequencyId={currentPlayingFreq.id} />
+        </div>
+      )}
     </div>
   );
 };

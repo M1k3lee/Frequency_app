@@ -304,13 +304,13 @@ class AudioEngine {
     if (id.startsWith('gateway-')) {
       if (this.gatewayGenerator) {
         this.gatewayGenerator.stop();
-        // Wait for fade-out to complete before disposing (50ms fade-out + 10ms buffer)
+        // Wait for fade-out to complete before disposing (50ms master fade + 50ms layer fade + 20ms buffer)
         setTimeout(() => {
           if (this.gatewayGenerator) {
             this.gatewayGenerator.dispose();
             this.gatewayGenerator = null;
           }
-        }, 60);
+        }, 120);
       }
       return;
     }
@@ -425,8 +425,8 @@ class AudioEngine {
     // Stop Gateway generator
     if (this.gatewayGenerator) {
       this.gatewayGenerator.stop();
-      // Wait for fade-out to complete before disposing (50ms fade + 20ms buffer)
-      await new Promise(resolve => setTimeout(resolve, 70));
+      // Wait for fade-out to complete before disposing (50ms master fade + 50ms layer fade + 20ms buffer)
+      await new Promise(resolve => setTimeout(resolve, 120));
       if (this.gatewayGenerator) {
         this.gatewayGenerator.dispose();
         this.gatewayGenerator = null;
@@ -504,6 +504,52 @@ class AudioEngine {
 
   isReadyForPlayback(): boolean {
     return this.isReady;
+  }
+
+  // Gateway layer volume control methods
+  getGatewayConfig(): any {
+    if (!this.gatewayGenerator) return null;
+    return this.gatewayGenerator.getConfig();
+  }
+
+  getGatewayCarrierLayerCount(): number {
+    if (!this.gatewayGenerator) return 0;
+    return this.gatewayGenerator.getCarrierLayerCount();
+  }
+
+  getGatewayIsochronicLayerCount(): number {
+    if (!this.gatewayGenerator) return 0;
+    return this.gatewayGenerator.getIsochronicLayerCount();
+  }
+
+  getGatewayCarrierLayerVolume(index: number): number {
+    if (!this.gatewayGenerator) return 0;
+    return this.gatewayGenerator.getCarrierLayerVolume(index);
+  }
+
+  setGatewayCarrierLayerVolume(index: number, volume: number): void {
+    if (!this.gatewayGenerator) return;
+    this.gatewayGenerator.setCarrierLayerVolume(index, volume);
+  }
+
+  getGatewayIsochronicLayerVolume(index: number): number {
+    if (!this.gatewayGenerator) return 0;
+    return this.gatewayGenerator.getIsochronicLayerVolume(index);
+  }
+
+  setGatewayIsochronicLayerVolume(index: number, volume: number): void {
+    if (!this.gatewayGenerator) return;
+    this.gatewayGenerator.setIsochronicLayerVolume(index, volume);
+  }
+
+  resetGatewayLayerVolumes(): void {
+    if (!this.gatewayGenerator) return;
+    this.gatewayGenerator.resetToDefaults();
+  }
+
+  getGatewayAnalyser(): AnalyserNode | null {
+    if (!this.gatewayGenerator) return null;
+    return this.gatewayGenerator.getAnalyser();
   }
 }
 
