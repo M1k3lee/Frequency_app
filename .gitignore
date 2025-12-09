@@ -47,3 +47,7 @@ android/app/release.keystore
 android/app/debug.keystore
 key.properties
 
+# Documentation files (keep private)
+*.md
+!README.md
+

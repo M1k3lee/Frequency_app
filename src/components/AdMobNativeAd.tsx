@@ -6,12 +6,9 @@ import './AdMobNativeAd.css';
 /**
  * AdMob Banner Ad Component
  * 
- * Testing Mode: Currently enabled for testing before AdMob activation.
- * - With isTesting: true, test ads will be shown using your ad unit ID
- * - For production, set isTesting: false and initializeForTesting: false
- * 
- * Optional: You can also use Google's test ad unit ID for testing:
- * "ca-app-pub-3940256099942544/6300978111"
+ * Production Mode: Live ads are enabled.
+ * - initializeForTesting: false - Production mode
+ * - isTesting: false - Shows live ads from your ad unit
  */
 
 interface AdMobNativeAdProps {
@@ -42,7 +39,7 @@ const AdMobNativeAd: React.FC<AdMobNativeAdProps> = ({ adUnitId, className = '' 
         if (!admobInitialized) {
           await AdMob.initialize({
             testingDevices: [],
-            initializeForTesting: true, // Enable testing mode
+            initializeForTesting: false, // Production mode - live ads
           });
           admobInitialized = true;
         }
@@ -72,8 +69,8 @@ const AdMobNativeAd: React.FC<AdMobNativeAdProps> = ({ adUnitId, className = '' 
           adSize: BannerAdSize.ADAPTIVE_BANNER,
           position: BannerAdPosition.TOP_CENTER,
           margin: 0,
-          // Enable testing mode - shows test ads before AdMob activation
-          isTesting: true
+          // Production mode - shows live ads
+          isTesting: false
         };
 
         await AdMob.showBanner(options);

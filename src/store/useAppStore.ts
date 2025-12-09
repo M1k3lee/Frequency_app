@@ -21,6 +21,7 @@ interface AppState {
   showGateway: boolean;
   showBreathing: boolean;
   currentVisual: VisualPreset;
+  headphoneQuality: 'standard' | 'high-quality';
   
   // Timer
   playbackTimer: number | null; // in seconds
@@ -53,6 +54,7 @@ interface AppState {
   setShowGateway: (show: boolean) => void;
   setShowBreathing: (show: boolean) => void;
   setCurrentVisual: (visual: VisualPreset) => void;
+  setHeadphoneQuality: (quality: 'standard' | 'high-quality') => void;
   setPlaybackTimer: (seconds: number | null) => void;
   setPlaybackTimerRemaining: (seconds: number | null | ((prev: number | null) => number | null)) => void;
   setIsTimerActive: (active: boolean) => void;
@@ -81,6 +83,7 @@ export const useAppStore = create<AppState>()(
       showGateway: false,
       showBreathing: false,
       currentVisual: 'starlit-void',
+      headphoneQuality: 'standard',
       playbackTimer: null,
       playbackTimerRemaining: null,
       isTimerActive: false,
@@ -110,6 +113,10 @@ export const useAppStore = create<AppState>()(
             return;
           }
 
+          // Stop any currently playing frequencies before starting a new one to prevent pops
+          // Only if user wants single frequency playback (optional - can be removed if mixing is desired)
+          // For now, we'll keep mixing enabled but ensure smooth transitions
+
           // Ensure audio engine is initialized and context is running
           if (!audioEngine.isReadyForPlayback()) {
             await audioEngine.initialize();
@@ -120,7 +127,9 @@ export const useAppStore = create<AppState>()(
           // Audio context is managed by AudioEngine, so we rely on ensureInitialized
           // which is called by addFrequency in the audioEngine
           
-          const id = await audioEngine.playFrequency(frequency, volume, pan);
+          // Get headphone quality preference
+          const headphoneQuality = get().headphoneQuality;
+          const id = await audioEngine.playFrequency(frequency, volume, pan, headphoneQuality);
           
           // Set master volume after first frequency is added
           const currentMasterVolume = get().masterVolume;
@@ -192,14 +201,30 @@ export const useAppStore = create<AppState>()(
       },
 
       stopAll: async () => {
-        await audioEngine?.stopAll();
-        set({
-          currentFrequencies: new Map(),
-          isPlaying: false,
-          isTimerActive: false,
-          playbackTimerRemaining: null
-        });
-        console.log('All frequencies stopped');
+        try {
+          // Stop all audio first
+          await audioEngine?.stopAll();
+          
+          // Clear all state
+          set({
+            currentFrequencies: new Map(),
+            isPlaying: false,
+            isTimerActive: false,
+            playbackTimerRemaining: null,
+            playbackTimer: null
+          });
+          console.log('All frequencies stopped');
+        } catch (error) {
+          console.error('Error stopping all frequencies:', error);
+          // Even if there's an error, clear the state
+          set({
+            currentFrequencies: new Map(),
+            isPlaying: false,
+            isTimerActive: false,
+            playbackTimerRemaining: null,
+            playbackTimer: null
+          });
+        }
       },
 
       addBackgroundSound: async (sound: BackgroundSound, volume: number = 0.3) => {
@@ -289,6 +314,9 @@ export const useAppStore = create<AppState>()(
 
       setCurrentVisual: (visual: VisualPreset) => {
         set({ currentVisual: visual });
+      },
+      setHeadphoneQuality: (quality: 'standard' | 'high-quality') => {
+        set({ headphoneQuality: quality });
       },
 
       setPlaybackTimer: (seconds: number | null) => {

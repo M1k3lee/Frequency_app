@@ -1,0 +1,199 @@
+.headphone-selector {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.headphone-selector.header {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 20;
+}
+
+.headphone-selector.playback {
+  margin-left: 0.5rem;
+}
+
+.headphone-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.headphone-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.headphone-btn.hq {
+  background: rgba(100, 50, 150, 0.6);
+  border-color: rgba(100, 50, 150, 0.8);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(100, 50, 150, 0.4);
+}
+
+.headphone-btn svg {
+  flex-shrink: 0;
+}
+
+.headphone-info-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.headphone-info-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.headphone-selector.playback .headphone-btn {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.8rem;
+}
+
+.headphone-selector.playback .headphone-info-btn {
+  padding: 0.4rem;
+}
+
+.headphone-info-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.headphone-info-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(26, 26, 46, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 10001;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.headphone-info-modal h3 {
+  margin: 0 0 1rem 0;
+  color: #ffffff;
+  font-size: 1.25rem;
+}
+
+.headphone-info-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headphone-info-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.headphone-info-content {
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.headphone-info-content p {
+  margin: 0 0 1rem 0;
+}
+
+.headphone-info-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: rgba(100, 50, 150, 0.1);
+  border: 1px solid rgba(100, 50, 150, 0.2);
+  border-radius: 8px;
+}
+
+.headphone-info-section h4 {
+  margin: 0 0 0.5rem 0;
+  color: rgba(100, 50, 150, 0.9);
+  font-size: 1rem;
+}
+
+.headphone-info-section p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.headphone-info-tip {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(100, 50, 150, 0.15);
+  border-left: 3px solid rgba(100, 50, 150, 0.6);
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.headphone-info-tip strong {
+  color: rgba(100, 50, 150, 0.9);
+}
+
+@media (max-width: 768px) {
+  .headphone-selector.header {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .headphone-btn span {
+    display: none;
+  }
+
+  .headphone-btn.hq span {
+    display: inline;
+  }
+
+  .headphone-selector.playback .headphone-btn {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .headphone-info-modal {
+    width: 95%;
+    max-height: 90vh;
+    padding: 1.25rem;
+  }
+}
+

@@ -1,19 +1,70 @@
 import { BackgroundSound } from '../types';
 
 export const backgroundSounds: BackgroundSound[] = [
+  // New MP3-based sounds
   {
-    id: 'rain',
-    name: 'Gentle Rain',
+    id: 'zen-garden',
+    name: 'Zen Garden',
+    category: 'spa',
+    description: 'Peaceful zen garden ambiance',
+    icon: '🧘',
+    file: 'zen-garden.mp3'
+  },
+  {
+    id: 'distant-thunder',
+    name: 'Distant Thunderstorm',
     category: 'nature',
-    description: 'Soothing rainfall for deep relaxation',
-    icon: '🌧️'
+    description: 'Distant thunder and rain for deep relaxation',
+    icon: '⛈️',
+    file: 'distant-thunder.mp3'
+  },
+  {
+    id: 'forest-rain',
+    name: 'Forest Rain',
+    category: 'nature',
+    description: 'Gentle rain in a peaceful forest',
+    icon: '🌧️',
+    file: 'Forest_Rain.mp3'
   },
   {
     id: 'ocean-waves',
     name: 'Ocean Waves',
     category: 'nature',
     description: 'Calming ocean waves on the shore',
-    icon: '🌊'
+    icon: '🌊',
+    file: 'ocean-waves.mp3'
+  },
+  {
+    id: 'singing-bowls',
+    name: 'Singing Bowls',
+    category: 'spa',
+    description: 'Meditative singing bowl tones',
+    icon: '🔔',
+    file: 'singing-bowls.mp3'
+  },
+  {
+    id: 'spring-mountain',
+    name: 'Spring Mountain',
+    category: 'nature',
+    description: 'Serene mountain spring ambiance',
+    icon: '⛰️',
+    file: 'spring_mountain.mp3'
+  },
+  {
+    id: 'drift-lullaby',
+    name: 'Drift Lullaby',
+    category: 'spa',
+    description: 'Gentle drifting lullaby for deep relaxation',
+    icon: '🌙',
+    file: 'drift-lul1.mp3'
+  },
+  // Legacy programmatic sounds (kept for backward compatibility)
+  {
+    id: 'rain',
+    name: 'Gentle Rain',
+    category: 'nature',
+    description: 'Soothing rainfall for deep relaxation',
+    icon: '🌧️'
   },
   {
     id: 'forest-birds',

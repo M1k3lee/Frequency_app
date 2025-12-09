@@ -56,16 +56,26 @@ export class IsochronicNode {
   start(): void {
     if (!this.isPlaying) {
       const now = this.audioContext.currentTime;
-      // Start oscillators first
+      const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+      
+      // Cancel any existing scheduled values
+      this.gain.gain.cancelScheduledValues(now);
+      
+      // Calculate target gain
+      const minGain = 0.0001; // Use small value for exponential ramp
+      const maxGain = Math.max(0.0001, this.config.volume);
+      const adjustedCenter = minGain + (maxGain - minGain) * this.config.dutyCycle;
+      
+      // Set gain to minimum before starting
+      this.gain.gain.setValueAtTime(0.0001, now);
+      
+      // Start oscillators at exact same time
       this.osc.start(now);
       this.lfo.start(now);
-      // Fade in smoothly to prevent clicks (50ms fade-in)
-      this.gain.gain.cancelScheduledValues(now);
-      const minGain = 0;
-      const maxGain = this.config.volume;
-      const adjustedCenter = minGain + (maxGain - minGain) * this.config.dutyCycle;
-      this.gain.gain.setValueAtTime(0, now);
-      this.gain.gain.linearRampToValueAtTime(adjustedCenter, now + 0.05);
+      
+      // Smooth exponential fade-in
+      this.gain.gain.exponentialRampToValueAtTime(adjustedCenter, now + fadeInDuration);
+      
       this.isPlaying = true;
     }
   }
@@ -73,13 +83,25 @@ export class IsochronicNode {
   stop(): void {
     if (this.isPlaying) {
       const now = this.audioContext.currentTime;
-      // Fade out smoothly before stopping (50ms fade-out)
+      const fadeOutDuration = 0.3; // 300ms smooth fade-out to match fade-in
+      const stopTime = now + fadeOutDuration + 0.01; // Small buffer after fade
+      
+      // Cancel any existing scheduled values
       this.gain.gain.cancelScheduledValues(now);
-      this.gain.gain.setValueAtTime(this.gain.gain.value, now);
-      this.gain.gain.linearRampToValueAtTime(0, now + 0.05);
+      
+      // Get current gain value (avoid zero for exponential ramp)
+      const currentGain = Math.max(0.0001, this.gain.gain.value);
+      
+      // Set current value and fade out
+      this.gain.gain.setValueAtTime(currentGain, now);
+      
+      // Smooth exponential fade-out
+      this.gain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+      
       // Stop oscillators after fade-out completes
-      this.osc.stop(now + 0.06);
-      this.lfo.stop(now + 0.06);
+      this.osc.stop(stopTime);
+      this.lfo.stop(stopTime);
+      
       this.isPlaying = false;
     }
   }

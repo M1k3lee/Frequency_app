@@ -1,4 +1,5 @@
 import React from 'react';
+import HeadphoneQualitySelector from './HeadphoneQualitySelector';
 import './AppHeader.css';
 
 // Use Vite's BASE_URL for proper path resolution with GitHub Pages
@@ -8,6 +9,7 @@ const AppHeader: React.FC = () => {
   return (
     <header className="app-header">
       <img src={logoPath} alt="Frequency Zen" className="app-logo" />
+      <HeadphoneQualitySelector variant="header" />
     </header>
   );
 };

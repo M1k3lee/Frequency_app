@@ -110,7 +110,7 @@ class AudioEngine {
     }
   }
 
-  async playFrequency(frequency: Frequency, volume: number = 0.7, pan: number = 0): Promise<string> {
+  async playFrequency(frequency: Frequency, volume: number = 0.7, pan: number = 0, headphoneQuality: 'standard' | 'high-quality' = 'standard'): Promise<string> {
     // Check if this is a Gateway signal
     const gatewayConfig = getGatewayConfig(frequency.id);
     const isGateway = frequency.isGatewaySignal || gatewayConfig !== null;
@@ -144,11 +144,25 @@ class AudioEngine {
       const adjustedVolume = Math.min(1.0, volume * 2.0); // Boost by 100%, cap at 1.0
       
       // For very low frequencies (< 10Hz), use carrier frequency modulation
-      // For 10-20Hz, use binaural beats as they're close to audible range
+      // Carrier frequency selection based on headphone quality preference
+      // Standard: Higher carriers (300-500Hz) for better phone speaker compatibility
+      // High Quality: Lower carriers (200Hz) for deeper bass response with premium headphones
       if (frequency.frequency < 10) {
-        const carrierFreq = 200; // Carrier frequency in Hz
+        let carrierFreq: number;
+        let modulationDepth: number;
+        
+        if (headphoneQuality === 'high-quality') {
+          // High quality: Use lower carrier (200Hz) for deeper bass response with premium headphones
+          carrierFreq = 200;
+          modulationDepth = frequency.frequency < 2 ? 60 : 50; // Modulate by ±50-60Hz
+        } else {
+          // Standard: Use higher carrier for better phone speaker compatibility
+          // Very low frequencies (< 2Hz) use 400Hz, others use 300Hz
+          carrierFreq = frequency.frequency < 2 ? 400 : 300;
+          modulationDepth = frequency.frequency < 2 ? 80 : 60; // Modulate by ±60-80Hz for audible effect
+        }
+        
         const modulationFreq = frequency.frequency;
-        const modulationDepth = 50; // Modulate by ±50Hz for audible effect
         
         // Create carrier oscillator at base frequency
         // Set phase to 0 to ensure smooth start and prevent clicks
@@ -180,10 +194,20 @@ class AudioEngine {
           throw new Error('Audio context must be running to play audio');
         }
         
-        // Start carrier with zero volume, then fade in smoothly to prevent clicks
-        carrier.start();
-        // Longer fade-in (50ms) to eliminate clicks from phase discontinuities
-        gain.gain.rampTo(adjustedVolume, 0.05);
+        // Use proper Web Audio API scheduling for smooth fade-in
+        const now = Tone.context.currentTime;
+        const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+        
+        // Ensure gain is explicitly 0 before starting to prevent pops
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(0, now);
+        
+        // Start carrier with zero volume
+        carrier.start(now);
+        lfo.start(now);
+        
+        // Smooth exponential fade-in (sounds more natural than linear)
+        gain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
         
         // Verify it actually started
         setTimeout(() => {
@@ -257,12 +281,23 @@ class AudioEngine {
           throw new Error('Audio context must be running to play audio');
         }
         
-        // Start oscillators with zero volume, then fade in smoothly to prevent clicks
-        leftOsc.start();
-        rightOsc.start();
-        // Longer fade-in (50ms) to eliminate clicks from phase discontinuities
-        leftGain.gain.rampTo(adjustedVolume, 0.05);
-        rightGain.gain.rampTo(adjustedVolume, 0.05);
+        // Use proper Web Audio API scheduling for smooth fade-in
+        const now = Tone.context.currentTime;
+        const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+        
+        // Ensure gains are explicitly 0 before starting to prevent pops
+        leftGain.gain.cancelScheduledValues(now);
+        rightGain.gain.cancelScheduledValues(now);
+        leftGain.gain.setValueAtTime(0, now);
+        rightGain.gain.setValueAtTime(0, now);
+        
+        // Start oscillators with zero volume at exact same time
+        leftOsc.start(now);
+        rightOsc.start(now);
+        
+        // Smooth exponential fade-in (sounds more natural than linear)
+        leftGain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
+        rightGain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
         
         // Verify they actually started
         setTimeout(() => {
@@ -301,16 +336,17 @@ class AudioEngine {
 
   stopFrequency(id: string): void {
     // Check if this is a Gateway signal
-    if (id.startsWith('gateway-')) {
+    // Gateway signals have IDs like "gateway-{configId}-{timestamp}" or just start with "gateway-"
+    if (id.startsWith('gateway-') || this.gatewayGenerator) {
       if (this.gatewayGenerator) {
         this.gatewayGenerator.stop();
-        // Wait for fade-out to complete before disposing (50ms master fade + 50ms layer fade + 20ms buffer)
+        // Wait for fade-out to complete before disposing (100ms master fade + 100ms layer fade + 30ms buffer)
         setTimeout(() => {
           if (this.gatewayGenerator) {
             this.gatewayGenerator.dispose();
             this.gatewayGenerator = null;
           }
-        }, 120);
+        }, 230);
       }
       return;
     }
@@ -319,31 +355,54 @@ class AudioEngine {
     if (osc) {
       try {
         // Fade out smoothly to prevent clicks when stopping
-        const fadeOutTime = 0.05; // 50ms fade-out
+        // Use longer fade-out (300ms) to match fade-in and prevent pops
+        const fadeOutDuration = 0.3; // 300ms fade-out
+        
+        // Cancel any existing scheduled values
+        const now = Tone.context.currentTime;
+        const stopTime = now + fadeOutDuration + 0.01; // Small buffer after fade
+        
         if (osc.carrier) {
           // Carrier modulation - single gain
-          osc.gain.gain.rampTo(0, fadeOutTime);
+          const currentGain = Math.max(0.0001, osc.gain.gain.value); // Avoid zero for exponential
+          osc.gain.gain.cancelScheduledValues(now);
+          osc.gain.gain.setValueAtTime(currentGain, now);
+          osc.gain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+          // Stop after fade completes
+          osc.carrier.stop(stopTime);
+          if (osc.lfo) {
+            osc.lfo.stop(stopTime);
+          }
         } else {
           // Binaural beats - fade both gains
-          osc.gain.gain.rampTo(0, fadeOutTime);
+          const currentLeftGain = Math.max(0.0001, osc.gain.gain.value);
+          const currentRightGain = osc.rightGain ? Math.max(0.0001, osc.rightGain.gain.value) : 0.0001;
+          
+          osc.gain.gain.cancelScheduledValues(now);
+          osc.gain.gain.setValueAtTime(currentLeftGain, now);
+          osc.gain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+          
           if (osc.rightGain) {
-            osc.rightGain.gain.rampTo(0, fadeOutTime);
+            osc.rightGain.gain.cancelScheduledValues(now);
+            osc.rightGain.gain.setValueAtTime(currentRightGain, now);
+            osc.rightGain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+          }
+          
+          // Stop oscillators after fade completes
+          osc.left.stop(stopTime);
+          if (osc.right) {
+            osc.right.stop(stopTime);
           }
         }
         
-        // Stop oscillators after fade-out completes
+        // Schedule cleanup after fade-out completes (oscillators already stopped with stopTime)
         setTimeout(() => {
           try {
-            osc.left.stop();
-            osc.right.stop();
-            if (osc.carrier) {
-              osc.carrier.stop();
-            }
-            if (osc.lfo) {
-              osc.lfo.stop();
-            }
+            // Dispose of all nodes after fade-out completes
             osc.left.dispose();
-            osc.right.dispose();
+            if (osc.right) {
+              osc.right.dispose();
+            }
             if (osc.carrier) {
               osc.carrier.dispose();
             }
@@ -358,7 +417,7 @@ class AudioEngine {
           } catch (error) {
             console.error('Error disposing oscillators:', error);
           }
-        }, fadeOutTime * 1000 + 10); // Add small buffer for fade completion
+        }, fadeOutDuration * 1000 + 50); // Wait for fade completion + buffer
       } catch (error) {
         console.error('Error stopping frequency:', error);
       }
@@ -422,24 +481,47 @@ class AudioEngine {
   }
 
   async stopAll(): Promise<void> {
-    // Stop Gateway generator
+    // Stop Gateway generator first (if it exists)
     if (this.gatewayGenerator) {
-      this.gatewayGenerator.stop();
-      // Wait for fade-out to complete before disposing (50ms master fade + 50ms layer fade + 20ms buffer)
-      await new Promise(resolve => setTimeout(resolve, 120));
-      if (this.gatewayGenerator) {
-        this.gatewayGenerator.dispose();
-        this.gatewayGenerator = null;
+      try {
+        this.gatewayGenerator.stop();
+        // Wait for fade-out to complete before disposing (300ms master fade + 300ms layer fade + 50ms buffer)
+        await new Promise(resolve => setTimeout(resolve, 650));
+        if (this.gatewayGenerator) {
+          this.gatewayGenerator.dispose();
+          this.gatewayGenerator = null;
+        }
+      } catch (error) {
+        console.error('Error stopping Gateway generator:', error);
+        // Force cleanup even if there's an error
+        if (this.gatewayGenerator) {
+          try {
+            this.gatewayGenerator.dispose();
+          } catch (e) {
+            console.error('Error disposing Gateway generator:', e);
+          }
+          this.gatewayGenerator = null;
+        }
       }
     }
 
     // Stop all Tone.js oscillators
-    this.activeOscillators.forEach((_, id) => {
-      this.stopFrequency(id);
+    const oscillatorIds = Array.from(this.activeOscillators.keys());
+    oscillatorIds.forEach((id) => {
+      try {
+        this.stopFrequency(id);
+      } catch (error) {
+        console.error(`Error stopping frequency ${id}:`, error);
+      }
     });
     
-    // Wait for all fade-outs to complete (50ms fade + 20ms buffer)
-    await new Promise(resolve => setTimeout(resolve, 70));
+    // Clear the map after stopping
+    this.activeOscillators.clear();
+    
+    // Wait for all fade-outs to complete (300ms fade + 50ms buffer)
+    await new Promise(resolve => setTimeout(resolve, 350));
+    
+    console.log('All frequencies stopped successfully');
   }
 
   setVolume(id: string, volume: number): void {

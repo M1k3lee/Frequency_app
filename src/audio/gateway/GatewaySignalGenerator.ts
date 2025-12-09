@@ -82,11 +82,19 @@ export class GatewaySignalGenerator {
     if (!this.isPlaying) return;
     
     // Fade out master gain smoothly to prevent clicks
+    // Use longer fade-out (300ms) to match fade-in and prevent pops
     const now = this.audioContext.currentTime;
-    const currentVolume = this.masterGain.gain.value;
+    const fadeOutDuration = 0.3; // 300ms smooth fade-out
+    
+    // Get current volume (avoid zero for exponential ramp)
+    const currentVolume = Math.max(0.0001, this.masterGain.gain.value);
+    
+    // Cancel any existing scheduled values
     this.masterGain.gain.cancelScheduledValues(now);
     this.masterGain.gain.setValueAtTime(currentVolume, now);
-    this.masterGain.gain.linearRampToValueAtTime(0, now + 0.05); // 50ms fade-out
+    
+    // Smooth exponential fade-out
+    this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
     
     // Stop all layers (they have their own fade-outs)
     this.carrierLayers.forEach(layer => layer.stop());

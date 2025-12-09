@@ -54,16 +54,25 @@ export class CarrierLayerNode {
   start(): void {
     if (!this.isPlaying) {
       const now = this.audioContext.currentTime;
-      // Start oscillators first
-      this.leftOsc.start(now);
-      this.rightOsc.start(now);
-      // Fade in smoothly to prevent clicks (50ms fade-in)
+      const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+      
+      // Cancel any existing scheduled values
       this.leftGain.gain.cancelScheduledValues(now);
       this.rightGain.gain.cancelScheduledValues(now);
-      this.leftGain.gain.setValueAtTime(0, now);
-      this.rightGain.gain.setValueAtTime(0, now);
-      this.leftGain.gain.linearRampToValueAtTime(this.config.volume, now + 0.05);
-      this.rightGain.gain.linearRampToValueAtTime(this.config.volume, now + 0.05);
+      
+      // Set gain to 0 before starting
+      this.leftGain.gain.setValueAtTime(0.0001, now); // Use small value for exponential ramp
+      this.rightGain.gain.setValueAtTime(0.0001, now);
+      
+      // Start oscillators at exact same time
+      this.leftOsc.start(now);
+      this.rightOsc.start(now);
+      
+      // Smooth exponential fade-in (sounds more natural than linear)
+      const targetVolume = Math.max(0.0001, this.config.volume);
+      this.leftGain.gain.exponentialRampToValueAtTime(targetVolume, now + fadeInDuration);
+      this.rightGain.gain.exponentialRampToValueAtTime(targetVolume, now + fadeInDuration);
+      
       this.isPlaying = true;
     }
   }
@@ -71,16 +80,29 @@ export class CarrierLayerNode {
   stop(): void {
     if (this.isPlaying) {
       const now = this.audioContext.currentTime;
-      // Fade out smoothly before stopping (50ms fade-out)
+      const fadeOutDuration = 0.3; // 300ms smooth fade-out to match fade-in
+      const stopTime = now + fadeOutDuration + 0.01; // Small buffer after fade
+      
+      // Cancel any existing scheduled values
       this.leftGain.gain.cancelScheduledValues(now);
       this.rightGain.gain.cancelScheduledValues(now);
-      this.leftGain.gain.setValueAtTime(this.leftGain.gain.value, now);
-      this.rightGain.gain.setValueAtTime(this.rightGain.gain.value, now);
-      this.leftGain.gain.linearRampToValueAtTime(0, now + 0.05);
-      this.rightGain.gain.linearRampToValueAtTime(0, now + 0.05);
+      
+      // Get current gain values (avoid zero for exponential ramp)
+      const currentLeftGain = Math.max(0.0001, this.leftGain.gain.value);
+      const currentRightGain = Math.max(0.0001, this.rightGain.gain.value);
+      
+      // Set current values and fade out
+      this.leftGain.gain.setValueAtTime(currentLeftGain, now);
+      this.rightGain.gain.setValueAtTime(currentRightGain, now);
+      
+      // Smooth exponential fade-out
+      this.leftGain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+      this.rightGain.gain.exponentialRampToValueAtTime(0.0001, now + fadeOutDuration);
+      
       // Stop oscillators after fade-out completes
-      this.leftOsc.stop(now + 0.06);
-      this.rightOsc.stop(now + 0.06);
+      this.leftOsc.stop(stopTime);
+      this.rightOsc.stop(stopTime);
+      
       this.isPlaying = false;
     }
   }

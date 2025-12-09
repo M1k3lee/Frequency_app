@@ -41,8 +41,40 @@ class BackgroundSoundsManager {
       
       let source: Tone.ToneAudioNode;
       
-      // Generate sounds programmatically based on category
-      switch (sound.id) {
+      // Check if sound has an MP3 file - play it if available
+      if (sound.file) {
+        const filePath = `/sounds/${sound.file}`;
+        console.log('Loading background sound:', sound.name, 'from', filePath);
+        
+        // Create player and load the file
+        const player = new Tone.Player();
+        player.loop = true;
+        player.autostart = false;
+        
+        // Load the audio file and wait for it to be ready
+        try {
+          await player.load(filePath);
+          console.log('Background sound loaded successfully:', sound.name);
+        } catch (error) {
+          console.error('Error loading background sound file:', sound.name, filePath, error);
+          throw new Error(`Failed to load audio file: ${sound.file}. Please check the file path and ensure the file exists.`);
+        }
+        
+        // Verify the player is loaded before connecting
+        if (!player.loaded) {
+          throw new Error(`Audio file loaded but player not ready: ${sound.file}`);
+        }
+        
+        player.connect(gain);
+        source = player;
+        this.activeSounds.set(id, {
+          player,
+          gain,
+          reverb
+        });
+      } else {
+        // Generate sounds programmatically based on category
+        switch (sound.id) {
         case 'rain':
           // Rain using filtered noise
           const rainNoise = new Tone.Noise('pink');
@@ -178,6 +210,7 @@ class BackgroundSoundsManager {
             gain,
             reverb
           });
+        }
       }
       
       // Connect through reverb to master output
@@ -187,10 +220,17 @@ class BackgroundSoundsManager {
       // Start the source
       if (source instanceof Tone.Noise) {
         source.start();
+      } else if (source instanceof Tone.Player) {
+        // Player is already loaded, just start it
+        source.start();
+        console.log('Background sound player started:', sound.name);
       }
       
-      // Fade in smoothly
-      gain.gain.rampTo(volume, 0.5);
+      // Fade in smoothly (300ms for smooth start)
+      const now = Tone.context.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(volume, now + 0.3);
       
       console.log('Background sound playing:', sound.name, 'at volume', volume);
       
@@ -205,10 +245,18 @@ class BackgroundSoundsManager {
     const sound = this.activeSounds.get(id);
     if (sound) {
       try {
-        // Fade out smoothly
-        sound.gain.gain.rampTo(0, 0.3);
+        // Fade out smoothly (300ms for smooth stop)
+        const now = Tone.context.currentTime;
+        const currentGain = Math.max(0.0001, sound.gain.gain.value);
+        sound.gain.gain.cancelScheduledValues(now);
+        sound.gain.gain.setValueAtTime(currentGain, now);
+        sound.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
         
         setTimeout(() => {
+          if (sound.player) {
+            sound.player.stop();
+            sound.player.dispose();
+          }
           if (sound.lfo) {
             sound.lfo.stop();
             sound.lfo.dispose();
@@ -241,7 +289,12 @@ class BackgroundSoundsManager {
   setVolume(id: string, volume: number): void {
     const sound = this.activeSounds.get(id);
     if (sound) {
-      sound.gain.gain.rampTo(volume, 0.1);
+      const now = Tone.context.currentTime;
+      const currentGain = Math.max(0.0001, sound.gain.gain.value);
+      const targetGain = Math.max(0.0001, volume);
+      sound.gain.gain.cancelScheduledValues(now);
+      sound.gain.gain.setValueAtTime(currentGain, now);
+      sound.gain.gain.exponentialRampToValueAtTime(targetGain, now + 0.1);
     }
   }
 

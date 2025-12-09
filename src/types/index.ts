@@ -78,6 +78,7 @@ export interface BackgroundSound {
   category: 'nature' | 'spa' | 'noise' | 'ambient';
   description: string;
   icon?: string;
+  file?: string; // Optional MP3 file path (relative to /sounds/)
 }
 
 export interface ActiveBackgroundSound {

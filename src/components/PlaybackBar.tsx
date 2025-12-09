@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Pause, Volume2, Timer, Save, Square, Clock } from 'lucide-react';
+import { Play, Pause, Volume2, Timer, Save, Square, Clock, Music } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById } from '../data/frequencies';
+import { getBackgroundSoundById } from '../data/backgroundSounds';
 import AdvancedFrequencyControls from './AdvancedFrequencyControls';
+import HeadphoneQualitySelector from './HeadphoneQualitySelector';
 import './PlaybackBar.css';
 
 const PlaybackBar: React.FC = () => {
   const {
     currentFrequencies,
+    currentBackgroundSounds,
     isPlaying,
     masterVolume,
     playbackTimerRemaining,
@@ -19,7 +22,8 @@ const PlaybackBar: React.FC = () => {
     setIsTimerActive,
     setPlaybackTimer,
     saveToPlaylist,
-    addFrequency
+    addFrequency,
+    setBackgroundSoundVolume
   } = useAppStore();
 
   const [showTimerModal, setShowTimerModal] = useState(false);
@@ -91,7 +95,23 @@ const PlaybackBar: React.FC = () => {
     return null;
   };
 
+  // Get any currently playing Gateway frequency (for advanced controls)
+  const getCurrentPlayingGatewayFrequency = () => {
+    if (currentFrequencies.size === 0) return null;
+    // Check all active frequencies to find a Gateway signal
+    for (const activeFreq of currentFrequencies.values()) {
+      if (activeFreq && activeFreq.enabled) {
+        const frequency = getFrequencyById(activeFreq.frequencyId);
+        if (frequency?.isGatewaySignal) {
+          return frequency;
+        }
+      }
+    }
+    return null;
+  };
+
   const currentPlayingFreq = getCurrentPlayingFrequency();
+  const currentPlayingGatewayFreq = getCurrentPlayingGatewayFrequency();
   const actuallyPlaying = currentFrequencies.size > 0 && isPlaying;
 
   const handlePlayPause = async () => {
@@ -155,6 +175,39 @@ const PlaybackBar: React.FC = () => {
             />
             <span className="volume-value">{Math.round(masterVolume * 100)}%</span>
           </div>
+
+          {/* Show headphone selector for low frequencies (< 10Hz) */}
+          {currentPlayingFreq && currentPlayingFreq.frequency < 10 && (
+            <HeadphoneQualitySelector variant="playback" />
+          )}
+
+          {/* Show background sound volume controls if any are playing */}
+          {Array.from(currentBackgroundSounds.values())
+            .filter(sound => sound.enabled)
+            .map(activeSound => {
+              const sound = getBackgroundSoundById(activeSound.soundId);
+              if (!sound) return null;
+              
+              return (
+                <div key={activeSound.id} className="background-sound-control">
+                  <Music size={14} />
+                  <span className="background-sound-name">{sound.name}</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={activeSound.volume}
+                    onChange={(e) => setBackgroundSoundVolume(activeSound.id, parseFloat(e.target.value))}
+                    className="background-sound-slider"
+                    aria-label={`${sound.name} volume`}
+                  />
+                  <span className="background-sound-volume-value">
+                    {Math.round(activeSound.volume * 100)}%
+                  </span>
+                </div>
+              );
+            })}
 
           <button
             className="playback-btn secondary"
@@ -224,9 +277,9 @@ const PlaybackBar: React.FC = () => {
       </div>
 
       {/* Advanced frequency controls - only shows for Gateway frequencies */}
-      {currentPlayingFreq?.isGatewaySignal && (
+      {currentPlayingGatewayFreq && (
         <div className="playback-bar-advanced">
-          <AdvancedFrequencyControls frequencyId={currentPlayingFreq.id} />
+          <AdvancedFrequencyControls frequencyId={currentPlayingGatewayFreq.id} />
         </div>
       )}
     </div>
