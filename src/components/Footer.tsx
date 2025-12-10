@@ -53,17 +53,15 @@ const Footer: React.FC = () => {
               <h3>Frequency Zen</h3>
               <p>Free binaural beats and meditation sounds for sleep, focus, and relaxation. Experience the power of brainwave entrainment.</p>
               <div className="footer-download">
-                <a 
-                  href="https://github.com/M1k3lee/Frequency_app/releases/latest/download/frequency-zen117.apk" 
+                <div 
                   className="download-button"
-                  download="FrequencyZen.apk"
-                  title="Download Frequency Zen Android App"
+                  style={{ cursor: 'default', opacity: 0.8 }}
+                  title="Coming soon to Google Play"
                 >
                   <span className="download-icon">📱</span>
-                  <span>Download Android App</span>
-                </a>
-                <p className="download-note">Direct APK download for Android devices</p>
-                <p className="download-update-date">Last updated on 12/10/2025 01:25am</p>
+                  <span>Available on Google Play Soon</span>
+                </div>
+                <p className="download-note">Android app coming soon to the Google Play Store</p>
               </div>
             </div>
 
