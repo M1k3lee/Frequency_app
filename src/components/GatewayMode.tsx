@@ -84,8 +84,14 @@ const GatewayMode: React.FC = () => {
       <div className="gateway-mode-panel" onClick={(e) => e.stopPropagation()}>
         <div className="gateway-header">
           <h2>Gateway Project Frequencies</h2>
-          <button className="close-btn" onClick={() => setShowGateway(false)}>
-            <X size={24} />
+          <button 
+            className="close-btn" 
+            onClick={() => setShowGateway(false)}
+            aria-label="Close Gateway Panel"
+            title="Close"
+          >
+            <X size={20} />
+            <span className="close-btn-text">Close</span>
           </button>
         </div>
 
@@ -214,9 +220,11 @@ const GatewayMode: React.FC = () => {
                 <button
                   className="close-experimental-btn"
                   onClick={() => setSelectedFreq(null)}
-                  aria-label="Close"
+                  aria-label="Close Experimental Data"
+                  title="Close"
                 >
-                  <X size={20} />
+                  <X size={18} />
+                  <span className="close-btn-text">Close</span>
                 </button>
               </div>
               

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Play, Pause, Info, Search } from 'lucide-react';
+import { Play, Pause, Info, Search, X } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { frequencies, searchFrequencies } from '../data/frequencies';
 import { Frequency } from '../types';
@@ -139,7 +139,18 @@ const FrequencyLibrary: React.FC = () => {
       {selectedFreq && (
         <div className="modal-overlay" onClick={() => setSelectedFreq(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedFreq.name}</h2>
+            <div className="modal-header">
+              <h2>{selectedFreq.name}</h2>
+              <button 
+                className="modal-close-x" 
+                onClick={() => setSelectedFreq(null)}
+                aria-label="Close Frequency Info"
+                title="Close"
+              >
+                <X size={18} />
+                <span className="close-btn-text">Close</span>
+              </button>
+            </div>
             <div className="modal-info">
               <p><strong>Frequency:</strong> {selectedFreq.frequency} Hz</p>
               <p><strong>Category:</strong> {selectedFreq.category}</p>
@@ -212,7 +223,6 @@ const FrequencyLibrary: React.FC = () => {
                 </div>
               )}
             </div>
-            <button className="close-btn" onClick={() => setSelectedFreq(null)}>Close</button>
           </div>
         </div>
       )}

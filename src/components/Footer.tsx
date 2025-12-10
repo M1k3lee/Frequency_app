@@ -1,149 +1,139 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { isMobileApp } from '../utils/isMobileApp';
 import './Footer.css';
 
 const Footer: React.FC = () => {
-  const navigate = useNavigate();
-  const currentYear = new Date().getFullYear();
   const isMobile = isMobileApp();
-  
-  const handleLinkClick = (path: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate(path);
-  };
+  const currentYear = new Date().getFullYear();
 
-  const articleCategories = [
-    {
-      title: 'Learn About Frequencies',
-      links: [
-        { path: '/articles/what-are-binaural-beats', title: 'What Are Binaural Beats?', description: 'Complete guide to binaural beats and brainwave entrainment' },
-        { path: '/articles/brainwave-frequencies-explained', title: 'Brainwave Frequencies Explained', description: 'Understanding alpha, beta, theta, delta, and gamma waves' },
-        { path: '/articles/best-frequencies-for-sleep', title: 'Best Frequencies for Sleep', description: 'Discover the best Hz frequencies for deep, restful sleep' },
-        { path: '/articles/best-frequencies-for-focus', title: 'Best Frequencies for Focus', description: 'Optimal brainwave frequencies for concentration and study' },
-        { path: '/articles/best-frequencies-for-meditation', title: 'Best Frequencies for Meditation', description: 'Guide to meditation frequencies and their benefits' }
-      ]
-    },
-    {
-      title: 'App Guides',
-      links: [
-        { path: '/articles/best-sleep-app-android', title: 'Best Sleep App for Android', description: 'Top-rated sleep frequency apps for Android devices' },
-        { path: '/articles/best-study-sounds-app', title: 'Best Study Sounds App', description: 'Find the perfect app for focus and concentration while studying' },
-        { path: '/articles/free-meditation-apps', title: 'Free Meditation Apps', description: 'Best free meditation and binaural beats apps available' },
-        { path: '/articles/gateway-project-frequencies', title: 'Gateway Project Frequencies', description: 'Explore declassified Gateway Project consciousness frequencies' }
-      ]
-    },
-    {
-      title: 'Frequency Therapy',
-      links: [
-        { path: '/articles/theta-waves-for-sleep', title: 'Theta Waves for Sleep', description: 'How theta frequencies promote deep, restorative sleep' },
-        { path: '/articles/alpha-waves-for-focus', title: 'Alpha Waves for Focus', description: 'Using alpha brainwaves to enhance concentration and learning' },
-        { path: '/articles/binaural-beats-for-anxiety', title: 'Binaural Beats for Anxiety', description: 'How binaural beats can help reduce anxiety and stress' },
-        { path: '/articles/frequency-therapy-guide', title: 'Frequency Therapy Guide', description: 'Complete guide to using frequencies for wellness and healing' }
-      ]
-    }
-  ];
-
-  return (
-    <footer className={`app-footer ${isMobile ? 'mobile-footer' : ''}`}>
-      <div className="footer-content">
-        {!isMobile && (
-          <div className="footer-main">
-            <div className="footer-brand">
+  if (isMobile) {
+    return (
+      <footer className="app-footer mobile-footer">
+        <div className="footer-content">
+          <div className="footer-mobile">
+            <div className="footer-brand-mobile">
               <h3>Frequency Zen</h3>
-              <p>Free binaural beats and meditation sounds for sleep, focus, and relaxation. Experience the power of brainwave entrainment.</p>
-              <div className="footer-download">
-                <div 
-                  className="download-button"
-                  style={{ cursor: 'default', opacity: 0.8 }}
-                  title="Coming soon to Google Play"
-                >
-                  <span className="download-icon">📱</span>
-                  <span>Available on Google Play Soon</span>
-                </div>
-                <p className="download-note">Android app coming soon to the Google Play Store</p>
+            </div>
+            <div className="footer-links-mobile">
+              <div className="footer-category-mobile">
+                <h4>Learn</h4>
+                <ul>
+                  <li><Link to="/articles/what-are-binaural-beats">What Are Binaural Beats?</Link></li>
+                  <li><Link to="/articles/brainwave-frequencies-explained">Brainwave Frequencies</Link></li>
+                  <li><Link to="/articles/best-frequencies-for-sleep">Best Sleep Frequencies</Link></li>
+                  <li><Link to="/articles/best-frequencies-for-focus">Best Focus Frequencies</Link></li>
+                  <li><Link to="/articles/best-frequencies-for-meditation">Best Meditation Frequencies</Link></li>
+                </ul>
+              </div>
+              <div className="footer-category-mobile">
+                <h4>App Guides</h4>
+                <ul>
+                  <li><Link to="/articles/best-sleep-app-android">Best Sleep App</Link></li>
+                  <li><Link to="/articles/best-study-sounds-app">Study Sounds App</Link></li>
+                  <li><Link to="/articles/free-meditation-apps">Free Meditation Apps</Link></li>
+                  <li><Link to="/articles/gateway-project-frequencies">Gateway Project</Link></li>
+                </ul>
+              </div>
+              <div className="footer-category-mobile">
+                <h4>Resources</h4>
+                <ul>
+                  <li><Link to="/technology">Advanced Technology</Link></li>
+                  <li><Link to="/privacy">Privacy Policy</Link></li>
+                </ul>
               </div>
             </div>
-
-            <div className="footer-links">
-              {articleCategories.map((category, index) => (
-                <div key={index} className="footer-category">
-                  <h4>{category.title}</h4>
-                  <ul>
-                    {category.links.map((link, linkIndex) => (
-                      <li key={linkIndex}>
-                        <a 
-                          href={link.path} 
-                          onClick={(e) => handleLinkClick(link.path, e)}
-                          title={link.description}
-                        >
-                          {link.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {isMobile && (
-          <div className="footer-mobile">
-            <div className="footer-links-mobile">
-              {/* Only show "Learn About Frequencies" category for mobile app */}
-              {articleCategories.filter(category => category.title === 'Learn About Frequencies').map((category, index) => (
-                <div key={index} className="footer-category-mobile">
-                  <h4>{category.title}</h4>
-                  <ul>
-                    {category.links.map((link, linkIndex) => (
-                      <li key={linkIndex}>
-                        <a 
-                          href={link.path} 
-                          onClick={(e) => handleLinkClick(link.path, e)}
-                          title={link.description}
-                        >
-                          {link.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            {/* Minimal footer bottom for mobile app - just copyright and disclaimer */}
             <div className="footer-bottom-mobile">
-              <p className="footer-copyright-mobile">&copy; {currentYear} Frequency Zen</p>
+              <p className="footer-copyright-mobile">
+                © {currentYear} Frequency Zen. All rights reserved.
+              </p>
               <p className="footer-disclaimer-mobile">
-                Not a medical device. Consult a healthcare professional for medical advice.
+                Frequency Zen is not a medical device. Individual experiences may vary. Consult a healthcare professional for medical advice.
               </p>
             </div>
           </div>
-        )}
+        </div>
+      </footer>
+    );
+  }
 
-        {!isMobile && (
-          <div className="footer-bottom">
-            <div className="footer-meta">
-              <p>&copy; {currentYear} Frequency Zen. All rights reserved.</p>
-              <div className="footer-links-inline">
-                <a href="/technology" onClick={(e) => handleLinkClick('/technology', e)}>Advanced Technology</a>
-                <span>•</span>
-                <a href="/privacy" onClick={(e) => handleLinkClick('/privacy', e)}>Privacy Policy</a>
-                <span>•</span>
-                <a href="/terms" onClick={(e) => handleLinkClick('/terms', e)}>Terms of Service</a>
-                <span>•</span>
-                <a href="/about" onClick={(e) => handleLinkClick('/about', e)}>About</a>
-              </div>
+  return (
+    <footer className="app-footer">
+      <div className="footer-content">
+        <div className="footer-main">
+          <div className="footer-brand">
+            <h3>Frequency Zen</h3>
+            <p>
+              Free binaural beats and meditation sounds for sleep, focus, and relaxation. 
+              Experience the power of brainwave entrainment.
+            </p>
+            <div className="footer-download">
+              <a 
+                href="/downloads/frequency-zen.apk" 
+                className="download-button"
+                download
+              >
+                <Download className="download-icon" />
+                Available on Google Play Soon
+              </a>
+              <p className="download-note">
+                Android app coming soon to the Google Play Store
+              </p>
+            </div>
+          </div>
+          <div className="footer-links">
+            <div className="footer-category">
+              <h4>Learn About Frequencies</h4>
+              <ul>
+                <li><Link to="/articles/what-are-binaural-beats">What Are Binaural Beats?</Link></li>
+                <li><Link to="/articles/brainwave-frequencies-explained">Brainwave Frequencies Explained</Link></li>
+                <li><Link to="/articles/best-frequencies-for-sleep">Best Frequencies for Sleep</Link></li>
+                <li><Link to="/articles/best-frequencies-for-focus">Best Frequencies for Focus</Link></li>
+                <li><Link to="/articles/best-frequencies-for-meditation">Best Frequencies for Meditation</Link></li>
+              </ul>
+            </div>
+            <div className="footer-category">
+              <h4>App Guides</h4>
+              <ul>
+                <li><Link to="/articles/best-sleep-app-android">Best Sleep App for Android</Link></li>
+                <li><Link to="/articles/best-study-sounds-app">Best Study Sounds App</Link></li>
+                <li><Link to="/articles/free-meditation-apps">Free Meditation Apps</Link></li>
+                <li><Link to="/articles/gateway-project-frequencies">Gateway Project Frequencies</Link></li>
+              </ul>
+            </div>
+            <div className="footer-category">
+              <h4>Frequency Therapy</h4>
+              <ul>
+                <li><Link to="/articles/theta-waves-for-sleep">Theta Waves for Sleep</Link></li>
+                <li><Link to="/articles/alpha-waves-for-focus">Alpha Waves for Focus</Link></li>
+                <li><Link to="/articles/binaural-beats-for-anxiety">Binaural Beats for Anxiety</Link></li>
+                <li><Link to="/articles/frequency-therapy-guide">Frequency Therapy Guide</Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <div className="footer-meta">
+            <p>© {currentYear} Frequency Zen. All rights reserved.</p>
+            <div className="footer-links-inline">
+              <Link to="/technology">Advanced Technology</Link>
+              <span>•</span>
+              <Link to="/privacy">Privacy Policy</Link>
+              <span>•</span>
+              <Link to="/terms">Terms of Service</Link>
+              <span>•</span>
+              <Link to="/about">About</Link>
             </div>
             <p className="footer-disclaimer">
-              Frequency Zen is not a medical device. Individual experiences may vary. Consult a healthcare professional for medical advice.
+              Frequency Zen is not a medical device. Individual experiences may vary. 
+              Consult a healthcare professional for medical advice.
             </p>
           </div>
-        )}
+        </div>
       </div>
     </footer>
   );
 };
 
 export default Footer;
-

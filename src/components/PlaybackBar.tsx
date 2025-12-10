@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Pause, Volume2, Timer, Save, Square, Clock, Music } from 'lucide-react';
+import { Play, Pause, Volume2, Timer, Save, Square, Clock, Music, X } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById } from '../data/frequencies';
 import { getBackgroundSoundById } from '../data/backgroundSounds';
@@ -245,7 +245,16 @@ const PlaybackBar: React.FC = () => {
             />
             <div className="timer-modal">
               <div className="timer-modal-content">
-                <h3>Set Timer</h3>
+                <div className="timer-modal-header">
+                  <h3>Set Timer</h3>
+                  <button 
+                    className="timer-modal-close-x" 
+                    onClick={() => setShowTimerModal(false)}
+                    aria-label="Close"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
                 <div className="timer-input-group">
                   <input
                     type="number"

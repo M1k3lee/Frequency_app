@@ -2,6 +2,7 @@ import * as Tone from 'tone';
 import { Frequency } from '../types';
 import { GatewaySignalGenerator } from './gateway/GatewaySignalGenerator';
 import { getGatewayConfig } from './gateway/GatewaySignalConfig';
+import { isMobileApp } from '../utils/isMobileApp';
 
 class AudioEngine {
   private context: Tone.BaseContext | null = null;
@@ -18,6 +19,7 @@ class AudioEngine {
   private gatewayGenerator: GatewaySignalGenerator | null = null;
   private isInitialized: boolean = false;
   private isReady: boolean = false;
+  private contextMonitorInterval: number | null = null;
 
   constructor() {
     // According to Chrome autoplay policy, we should create AudioContext only after user gesture
@@ -62,12 +64,22 @@ class AudioEngine {
     // - Or create AudioContext only when user interacts
     
     const currentState = Tone.context.state;
-    console.log('Audio context current state:', currentState);
+    const isMobile = isMobileApp();
+    console.log('Audio context current state:', currentState, 'Mobile:', isMobile);
+    
+    // On Android, add a small delay to ensure WebView audio context is ready
+    if (isMobile && currentState !== 'running') {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
     
     if (currentState === 'suspended') {
       console.log('Audio context is suspended, resuming...');
       try {
         await Tone.context.resume();
+        // On Android, wait a bit longer after resume to ensure it's stable
+        if (isMobile) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
         console.log('Audio context resumed, new state:', Tone.context.state);
       } catch (error) {
         console.error('Failed to resume audio context:', error);
@@ -78,6 +90,10 @@ class AudioEngine {
       console.log('Audio context not running, attempting to start...');
       try {
         await Tone.start();
+        // On Android, wait after start to ensure stability
+        if (isMobile) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
         console.log('Audio context started, state:', Tone.context.state);
       } catch (error) {
         console.error('Failed to start audio context:', error);
@@ -97,6 +113,48 @@ class AudioEngine {
     if (!this.context) {
       this.context = Tone.context;
       console.log('Audio context stored, state:', this.context.state);
+      
+      // Optimize audio context settings to prevent buffer underruns and crackling
+      if (this.context.rawContext instanceof AudioContext) {
+        const audioContext = this.context.rawContext as AudioContext;
+        
+        // Log current settings
+        console.log('Audio context sample rate:', audioContext.sampleRate);
+        console.log('Audio context state:', audioContext.state);
+        
+        // Monitor audio context state changes to catch unexpected suspensions
+        // This helps identify if the context is being suspended/resumed unexpectedly
+        audioContext.addEventListener('statechange', () => {
+          console.log('Audio context state changed to:', audioContext.state);
+          if (audioContext.state === 'suspended') {
+            console.warn('Audio context unexpectedly suspended - this may cause crackling');
+            // Try to automatically resume if we have active oscillators
+            if (this.activeOscillators.size > 0 || this.gatewayGenerator) {
+              console.log('Attempting to auto-resume audio context...');
+              audioContext.resume().catch(err => {
+                console.error('Failed to auto-resume audio context:', err);
+              });
+            }
+          }
+        });
+        
+        // Set up periodic monitoring to catch state changes that might not fire events
+        // Check every 2 seconds if context is still running when we have active audio
+        this.contextMonitorInterval = window.setInterval(() => {
+          if ((this.activeOscillators.size > 0 || this.gatewayGenerator) && 
+              audioContext.state !== 'running') {
+            console.warn('Audio context not running during playback - attempting resume');
+            audioContext.resume().catch(err => {
+              console.error('Failed to resume audio context during monitoring:', err);
+            });
+          }
+        }, 2000);
+        
+        // Note: Buffer size cannot be changed after AudioContext creation
+        // But we can optimize by ensuring we're not overloading the context
+        // The default buffer size is typically 512 or 1024 samples
+        // Larger buffers = less crackling but more latency
+      }
     }
 
     // Request wake lock for mobile
@@ -172,13 +230,6 @@ class AudioEngine {
           phase: 0
         });
         
-        // Create LFO for frequency modulation
-        // Tone.js LFO: frequency, min, max
-        const lfo = new Tone.LFO(modulationFreq, -modulationDepth, modulationDepth);
-        // Connect LFO to modulate the carrier's frequency parameter
-        lfo.connect(carrier.frequency);
-        lfo.start();
-        
         // Create gain for volume control - start at 0 for smooth fade-in
         const gain = new Tone.Gain(0);
         carrier.connect(gain);
@@ -196,18 +247,36 @@ class AudioEngine {
         
         // Use proper Web Audio API scheduling for smooth fade-in
         const now = Tone.context.currentTime;
-        const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+        // On Android, use slightly longer fade-in to prevent audio artifacts
+        const fadeInDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
         
         // Ensure gain is explicitly 0 before starting to prevent pops
         gain.gain.cancelScheduledValues(now);
         gain.gain.setValueAtTime(0, now);
         
+        // On Android, add a tiny delay before starting to ensure context is stable
+        const startTime = isMobileApp() ? now + 0.01 : now;
+        
+        // Create LFO for frequency modulation
+        // Tone.js LFO: frequency, min, max
+        // Use a smoother LFO to prevent discontinuities that cause crackling
+        const lfo = new Tone.LFO(modulationFreq, -modulationDepth, modulationDepth);
+        // Set LFO type to 'sine' for smoother modulation (prevents sharp transitions that cause crackling)
+        lfo.type = 'sine';
+        // Connect LFO to modulate the carrier's frequency parameter
+        // This creates smooth frequency modulation without discontinuities
+        lfo.connect(carrier.frequency);
+        
+        // Start LFO slightly before carrier to ensure smooth modulation from the start
+        // This prevents any initial frequency jumps that could cause crackling
+        const lfoStartTime = Math.max(0, startTime - 0.005);
+        lfo.start(lfoStartTime);
+        
         // Start carrier with zero volume
-        carrier.start(now);
-        lfo.start(now);
+        carrier.start(startTime);
         
         // Smooth exponential fade-in (sounds more natural than linear)
-        gain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
+        gain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
         
         // Verify it actually started
         setTimeout(() => {
@@ -283,7 +352,8 @@ class AudioEngine {
         
         // Use proper Web Audio API scheduling for smooth fade-in
         const now = Tone.context.currentTime;
-        const fadeInDuration = 0.3; // 300ms smooth fade-in to eliminate all clicks
+        // On Android, use slightly longer fade-in to prevent audio artifacts
+        const fadeInDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
         
         // Ensure gains are explicitly 0 before starting to prevent pops
         leftGain.gain.cancelScheduledValues(now);
@@ -291,13 +361,16 @@ class AudioEngine {
         leftGain.gain.setValueAtTime(0, now);
         rightGain.gain.setValueAtTime(0, now);
         
+        // On Android, add a tiny delay before starting to ensure context is stable
+        const startTime = isMobileApp() ? now + 0.01 : now;
+        
         // Start oscillators with zero volume at exact same time
-        leftOsc.start(now);
-        rightOsc.start(now);
+        leftOsc.start(startTime);
+        rightOsc.start(startTime);
         
         // Smooth exponential fade-in (sounds more natural than linear)
-        leftGain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
-        rightGain.gain.exponentialRampToValueAtTime(adjustedVolume, now + fadeInDuration);
+        leftGain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
+        rightGain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
         
         // Verify they actually started
         setTimeout(() => {
@@ -355,8 +428,8 @@ class AudioEngine {
     if (osc) {
       try {
         // Fade out smoothly to prevent clicks when stopping
-        // Use longer fade-out (300ms) to match fade-in and prevent pops
-        const fadeOutDuration = 0.3; // 300ms fade-out
+        // On Android, use slightly longer fade-out to prevent audio artifacts
+        const fadeOutDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
         
         // Cancel any existing scheduled values
         const now = Tone.context.currentTime;
@@ -517,6 +590,12 @@ class AudioEngine {
     
     // Clear the map after stopping
     this.activeOscillators.clear();
+    
+    // Stop context monitoring if no audio is playing
+    if (this.contextMonitorInterval !== null) {
+      clearInterval(this.contextMonitorInterval);
+      this.contextMonitorInterval = null;
+    }
     
     // Wait for all fade-outs to complete (300ms fade + 50ms buffer)
     await new Promise(resolve => setTimeout(resolve, 350));

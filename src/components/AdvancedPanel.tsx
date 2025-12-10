@@ -98,9 +98,10 @@ const AdvancedPanel: React.FC = () => {
           className="close-advanced-btn"
           onClick={() => setShowAdvanced(false)}
           aria-label="Close Advanced Panel"
-          title="Return to main page"
+          title="Close"
         >
-          <X size={24} />
+          <X size={18} />
+          <span className="close-btn-text">Close</span>
         </button>
       </div>
 

@@ -260,11 +260,52 @@
   max-height: 80vh;
   overflow-y: auto;
   color: white;
+  position: relative;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-content h2 {
-  margin-top: 0;
+  margin: 0;
   color: white;
+  flex: 1;
+}
+
+.modal-close-x {
+  background: rgba(220, 50, 50, 0.7);
+  border: 2px solid rgba(255, 80, 80, 0.9);
+  border-radius: 25px;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(220, 50, 50, 0.4);
+  margin-left: 1rem;
+  flex-shrink: 0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.modal-close-x:hover {
+  background: rgba(220, 50, 50, 0.9);
+  border-color: rgba(255, 100, 100, 1);
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(220, 50, 50, 0.6);
+}
+
+.modal-close-x .close-btn-text {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .modal-info p {
