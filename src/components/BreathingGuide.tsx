@@ -336,7 +336,7 @@ const BreathingGuide: React.FC = () => {
             {/* Phase Indicators */}
             {isActive && (
               <div className="phase-indicators">
-                {phases.map((phase, index) => (
+                {phases.map((phase) => (
                   <div
                     key={phase}
                     className={`phase-indicator ${breathPhase === phase ? 'active' : ''}`}
