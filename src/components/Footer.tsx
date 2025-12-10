@@ -54,7 +54,7 @@ const Footer: React.FC = () => {
               <p>Free binaural beats and meditation sounds for sleep, focus, and relaxation. Experience the power of brainwave entrainment.</p>
               <div className="footer-download">
                 <a 
-                  href="/downloads/frequency-zen117.apk" 
+                  href="https://github.com/M1k3lee/Frequency_app/releases/latest/download/frequency-zen117.apk" 
                   className="download-button"
                   download="FrequencyZen.apk"
                   title="Download Frequency Zen Android App"

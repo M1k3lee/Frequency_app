@@ -51,3 +51,6 @@ key.properties
 *.md
 !README.md
 
+# Large APK files (use GitHub Releases instead)
+*.apk
+
