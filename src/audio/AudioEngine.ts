@@ -122,6 +122,27 @@ class AudioEngine {
         console.log('Audio context sample rate:', audioContext.sampleRate);
         console.log('Audio context state:', audioContext.state);
         
+        // Android-specific optimizations for better audio stability
+        if (isMobileApp()) {
+          console.log('Android detected - applying mobile audio optimizations');
+          // On Android WebView, audio context can be more sensitive
+          // Add extra stability checks and delays
+          if (audioContext.state === 'running') {
+            // Even if running, add a small stabilization delay on Android
+            await new Promise(resolve => setTimeout(resolve, 50));
+            // Double-check it's still running after delay
+            if (audioContext.state !== 'running') {
+              console.warn('Android: Audio context stopped during stabilization, resuming...');
+              try {
+                await audioContext.resume();
+                await new Promise(resolve => setTimeout(resolve, 50));
+              } catch (err) {
+                console.error('Android: Failed to resume after stabilization:', err);
+              }
+            }
+          }
+        }
+        
         // Monitor audio context state changes to catch unexpected suspensions
         // This helps identify if the context is being suspended/resumed unexpectedly
         audioContext.addEventListener('statechange', () => {
@@ -139,16 +160,22 @@ class AudioEngine {
         });
         
         // Set up periodic monitoring to catch state changes that might not fire events
-        // Check every 2 seconds if context is still running when we have active audio
+        // On Android, check more frequently (every 1 second) to catch issues faster
+        // On web, every 2 seconds is sufficient
+        const monitorInterval = isMobileApp() ? 1000 : 2000;
         this.contextMonitorInterval = window.setInterval(() => {
           if ((this.activeOscillators.size > 0 || this.gatewayGenerator) && 
               audioContext.state !== 'running') {
             console.warn('Audio context not running during playback - attempting resume');
-            audioContext.resume().catch(err => {
-              console.error('Failed to resume audio context during monitoring:', err);
-            });
+            // On Android, add a small delay before resume for stability
+            const resumeDelay = isMobileApp() ? 50 : 0;
+            setTimeout(() => {
+              audioContext.resume().catch(err => {
+                console.error('Failed to resume audio context during monitoring:', err);
+              });
+            }, resumeDelay);
           }
-        }, 2000);
+        }, monitorInterval);
         
         // Note: Buffer size cannot be changed after AudioContext creation
         // But we can optimize by ensuring we're not overloading the context
@@ -269,11 +296,15 @@ class AudioEngine {
         
         // Start LFO slightly before carrier to ensure smooth modulation from the start
         // This prevents any initial frequency jumps that could cause crackling
-        const lfoStartTime = Math.max(0, startTime - 0.005);
+        // On Android, use a slightly longer pre-start delay for better stability
+        const lfoPreStartDelay = isMobileApp() ? 0.01 : 0.005;
+        const lfoStartTime = Math.max(0, startTime - lfoPreStartDelay);
         lfo.start(lfoStartTime);
         
-        // Start carrier with zero volume
-        carrier.start(startTime);
+        // On Android, add a small additional delay before starting carrier for extra stability
+        // This helps prevent audio artifacts on Android WebView
+        const carrierStartTime = isMobileApp() ? startTime + 0.005 : startTime;
+        carrier.start(carrierStartTime);
         
         // Smooth exponential fade-in (sounds more natural than linear)
         gain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
