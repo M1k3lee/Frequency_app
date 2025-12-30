@@ -76,6 +76,31 @@
   font-size: 1.25rem;
 }
 
+.play-store-button {
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: inline-block;
+}
+
+.play-store-button:hover {
+  background: transparent;
+  box-shadow: none;
+  transform: translateY(-2px);
+}
+
+.play-store-badge {
+  height: 60px;
+  width: auto;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.play-store-badge:hover {
+  opacity: 0.9;
+}
+
 .download-note {
   margin: 0.75rem 0 0 0;
   color: rgba(255, 255, 255, 0.5);

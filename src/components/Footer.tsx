@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Download } from 'lucide-react';
 import { isMobileApp } from '../utils/isMobileApp';
 import './Footer.css';
 
@@ -70,16 +69,17 @@ const Footer: React.FC = () => {
             </p>
             <div className="footer-download">
               <a 
-                href="/downloads/frequency-zen.apk" 
-                className="download-button"
-                download
+                href="https://play.google.com/store/apps/details?id=com.frequencyzen.app" 
+                className="download-button play-store-button"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <Download className="download-icon" />
-                Available on Google Play Soon
+                <img 
+                  src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" 
+                  alt="Get it on Google Play" 
+                  className="play-store-badge"
+                />
               </a>
-              <p className="download-note">
-                Android app coming soon to the Google Play Store
-              </p>
             </div>
           </div>
           <div className="footer-links">
