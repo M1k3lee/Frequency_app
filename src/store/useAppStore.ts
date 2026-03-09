@@ -5,6 +5,11 @@ import { audioEngine } from '../audio/AudioEngine';
 import { backgroundSoundsManager } from '../audio/BackgroundSoundsManager';
 import { getFrequencyById } from '../data/frequencies';
 
+type AddFrequencyOptions = {
+  showCinematic?: boolean;
+  source?: string;
+};
+
 interface AppState {
   // Audio state
   currentFrequencies: Map<string, ActiveFrequency>;
@@ -22,6 +27,13 @@ interface AppState {
   showBreathing: boolean;
   currentVisual: VisualPreset;
   headphoneQuality: 'standard' | 'high-quality';
+  isFocusMode: boolean;
+  sessionCinematic: {
+    active: boolean;
+    frequencyName: string;
+    frequencyHz: number;
+    source?: string;
+  } | null;
   
   // Timer
   playbackTimer: number | null; // in seconds
@@ -39,7 +51,7 @@ interface AppState {
   sequenceTimer: NodeJS.Timeout | null;
   
   // Actions
-  addFrequency: (frequency: Frequency, volume?: number, pan?: number) => Promise<void>;
+  addFrequency: (frequency: Frequency, volume?: number, pan?: number, options?: AddFrequencyOptions) => Promise<void>;
   removeFrequency: (id: string) => void;
   updateFrequency: (id: string, updates: Partial<ActiveFrequency>) => void;
   stopAll: () => Promise<void>;
@@ -55,6 +67,9 @@ interface AppState {
   setShowBreathing: (show: boolean) => void;
   setCurrentVisual: (visual: VisualPreset) => void;
   setHeadphoneQuality: (quality: 'standard' | 'high-quality') => void;
+  setFocusMode: (focus: boolean) => void;
+  triggerSessionCinematic: (payload: { frequencyName: string; frequencyHz: number; source?: string }) => void;
+  clearSessionCinematic: () => void;
   setPlaybackTimer: (seconds: number | null) => void;
   setPlaybackTimerRemaining: (seconds: number | null | ((prev: number | null) => number | null)) => void;
   setIsTimerActive: (active: boolean) => void;
@@ -84,6 +99,8 @@ export const useAppStore = create<AppState>()(
       showBreathing: false,
       currentVisual: 'starlit-void',
       headphoneQuality: 'standard',
+      isFocusMode: false,
+      sessionCinematic: null,
       playbackTimer: null,
       playbackTimerRemaining: null,
       isTimerActive: false,
@@ -95,7 +112,7 @@ export const useAppStore = create<AppState>()(
       sequenceTimer: null,
 
       // Initialize audio engine
-      addFrequency: async (frequency: Frequency, volume: number = 0.7, pan: number = 0) => {
+      addFrequency: async (frequency: Frequency, volume: number = 0.7, pan: number = 0, options?: AddFrequencyOptions) => {
         try {
           if (!audioEngine) {
             console.error('Audio engine not initialized');
@@ -153,6 +170,17 @@ export const useAppStore = create<AppState>()(
               isPlaying: true
             };
           });
+
+          if (options?.showCinematic !== false) {
+            set({
+              sessionCinematic: {
+                active: true,
+                frequencyName: frequency.name,
+                frequencyHz: frequency.frequency,
+                source: options?.source
+              }
+            });
+          }
         } catch (error) {
           console.error('Error adding frequency:', error);
         }
@@ -163,9 +191,11 @@ export const useAppStore = create<AppState>()(
         set((state) => {
           const newFrequencies = new Map(state.currentFrequencies);
           newFrequencies.delete(id);
+          const hasActiveFrequencies = newFrequencies.size > 0;
           return {
             currentFrequencies: newFrequencies,
-            isPlaying: newFrequencies.size > 0 ? state.isPlaying : false
+            isPlaying: hasActiveFrequencies ? state.isPlaying : false,
+            isFocusMode: hasActiveFrequencies ? state.isFocusMode : false
           };
         });
       },
@@ -191,7 +221,7 @@ export const useAppStore = create<AppState>()(
             } else {
               const frequency = getFrequencyById(freq.frequencyId);
               if (frequency) {
-                get().addFrequency(frequency, updated.volume, updated.pan);
+                get().addFrequency(frequency, updated.volume, updated.pan, { showCinematic: false });
               }
             }
           }
@@ -211,7 +241,9 @@ export const useAppStore = create<AppState>()(
             isPlaying: false,
             isTimerActive: false,
             playbackTimerRemaining: null,
-            playbackTimer: null
+            playbackTimer: null,
+            isFocusMode: false,
+            sessionCinematic: null
           });
           console.log('All frequencies stopped');
         } catch (error) {
@@ -222,7 +254,9 @@ export const useAppStore = create<AppState>()(
             isPlaying: false,
             isTimerActive: false,
             playbackTimerRemaining: null,
-            playbackTimer: null
+            playbackTimer: null,
+            isFocusMode: false,
+            sessionCinematic: null
           });
         }
       },
@@ -318,6 +352,23 @@ export const useAppStore = create<AppState>()(
       setHeadphoneQuality: (quality: 'standard' | 'high-quality') => {
         set({ headphoneQuality: quality });
       },
+      setFocusMode: (focus: boolean) => {
+        const hasActiveAudio = get().currentFrequencies.size > 0;
+        set({ isFocusMode: hasActiveAudio ? focus : false });
+      },
+      triggerSessionCinematic: (payload: { frequencyName: string; frequencyHz: number; source?: string }) => {
+        set({
+          sessionCinematic: {
+            active: true,
+            frequencyName: payload.frequencyName,
+            frequencyHz: payload.frequencyHz,
+            source: payload.source
+          }
+        });
+      },
+      clearSessionCinematic: () => {
+        set({ sessionCinematic: null });
+      },
 
       setPlaybackTimer: (seconds: number | null) => {
         set({ playbackTimer: seconds, playbackTimerRemaining: seconds });
@@ -375,7 +426,7 @@ export const useAppStore = create<AppState>()(
           if (freq.enabled) {
             const frequency = getFrequencyById(freq.frequencyId);
             if (frequency) {
-              await state.addFrequency(frequency, freq.volume, freq.pan);
+              await state.addFrequency(frequency, freq.volume, freq.pan, { showCinematic: false });
             }
           }
         });
@@ -445,7 +496,7 @@ export const useAppStore = create<AppState>()(
 
           // Stop all and play this frequency
           await state.stopAll();
-          await state.addFrequency(frequency, step.volume || 0.7, step.pan || 0);
+          await state.addFrequency(frequency, step.volume || 0.7, step.pan || 0, { showCinematic: false });
           
           set({ currentSequenceStep: stepIndex });
 
@@ -517,4 +568,3 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
-

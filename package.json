@@ -16,11 +16,15 @@
     "cap:run:ios": "cap run ios",
     "cap:build:android": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat assembleDebug) else (./gradlew assembleDebug)",
     "cap:build:android:release": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat assembleRelease) else (./gradlew assembleRelease)",
+    "cap:build:android:bundle": "npm run build:mobile && cap sync android && cd android && if exist gradlew.bat (gradlew.bat bundleRelease) else (./gradlew bundleRelease)",
     "android:update-version": "node scripts/update-android-version.js",
     "android:check-keystore": "node scripts/check-keystore.js",
+    "android:compress-audio": "powershell -ExecutionPolicy Bypass -File scripts/compress-audio.ps1",
     "postinstall": "node scripts/fix-admob-sdk35.cjs",
     "check:setup": "node scripts/check-setup.js",
-    "icons:generate": "node scripts/create-app-icons.js"
+    "icons:generate": "node scripts/create-app-icons.js",
+    "verify:frequencies": "node scripts/verify-frequencies.cjs",
+    "verify:playback": "node scripts/verify-playback.cjs"
   },
   "dependencies": {
     "@capacitor-community/admob": "^7.2.0",

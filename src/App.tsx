@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useMobileOptimizations } from './hooks/useMobileOptimizations';
 import { usePageTracking } from './hooks/usePageTracking';
@@ -15,12 +16,17 @@ import Footer from './components/Footer';
 import Article from './components/Article';
 import TechnologyComparison from './components/TechnologyComparison';
 import PrivacyPolicy from './components/PrivacyPolicy';
+import SessionCinematicOverlay from './components/SessionCinematicOverlay';
+import {
+  ANDROID_ADMOB_BANNER_AD_UNIT_ID,
+  ANDROID_ADMOB_USE_TEST_ADS,
+} from './config/admob';
 import './App.css';
 
 function AppContent() {
   useMobileOptimizations();
   usePageTracking();
-  const { showAdvanced, showGateway, showBreathing } = useAppStore();
+  const { showAdvanced, showGateway, showBreathing, isFocusMode } = useAppStore();
   const location = useLocation();
   const isStandalonePage = location.pathname.startsWith('/articles') || 
                            location.pathname.startsWith('/technology') ||
@@ -28,11 +34,24 @@ function AppContent() {
                            location.pathname.startsWith('/terms') ||
                            location.pathname.startsWith('/about');
 
+  useEffect(() => {
+    if (isFocusMode) {
+      document.body.classList.add('focus-mode-active');
+    } else {
+      document.body.classList.remove('focus-mode-active');
+    }
+
+    return () => {
+      document.body.classList.remove('focus-mode-active');
+    };
+  }, [isFocusMode]);
+
   return (
     <div className="app">
       {!isStandalonePage && <VisualCanvas />}
+      {!isStandalonePage && <SessionCinematicOverlay />}
       
-      <div className="app-content">
+      <div className={`app-content ${isFocusMode ? 'focus-mode' : ''}`}>
         <AppHeader />
         <Routes>
           <Route path="/articles/:slug" element={<Article />} />
@@ -49,7 +68,10 @@ function AppContent() {
               ) : (
                 <>
                   <HeroSection />
-                  <AdMobNativeAd adUnitId="ca-app-pub-1993326848971014/2440032906" />
+                  <AdMobNativeAd
+                    adUnitId={ANDROID_ADMOB_BANNER_AD_UNIT_ID}
+                    useTestAds={ANDROID_ADMOB_USE_TEST_ADS}
+                  />
                   <FrequencyLibrary />
                 </>
               )}

@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
 import { BackgroundSound } from '../types';
+import { isMobileApp } from '../utils/isMobileApp';
 
 class BackgroundSoundsManager {
   private activeSounds: Map<string, {
@@ -8,18 +9,46 @@ class BackgroundSoundsManager {
     filter?: Tone.Filter;
     lfo?: Tone.LFO;
     gain: Tone.Gain;
-    reverb?: Tone.Reverb;
   }> = new Map();
   private isInitialized: boolean = false;
+  private sharedReverb: Tone.Reverb | null = null;
+
+  private async getSharedReverb(): Promise<Tone.Reverb> {
+    if (this.sharedReverb) {
+      return this.sharedReverb;
+    }
+
+    const reverb = new Tone.Reverb(2);
+    reverb.wet.value = 0.3;
+    await reverb.generate();
+    reverb.connect(Tone.getDestination());
+    this.sharedReverb = reverb;
+    return reverb;
+  }
 
   async ensureInitialized(): Promise<void> {
     if (this.isInitialized) return;
     
+    const isMobile = isMobileApp();
     const currentState = Tone.context.state;
+    
+    // On Android, add a small delay to ensure WebView audio context is ready
+    if (isMobile && currentState !== 'running') {
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
     if (currentState === 'suspended') {
       await Tone.context.resume();
+      // On Android, wait a bit longer after resume to ensure it's stable
+      if (isMobile) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     } else if (currentState !== 'running') {
       await Tone.start();
+      // On Android, wait after start to ensure stability
+      if (isMobile) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
     
     this.isInitialized = true;
@@ -33,18 +62,15 @@ class BackgroundSoundsManager {
     try {
       // Create gain for volume control
       const gain = new Tone.Gain(0); // Start at 0 for fade-in
-      
-      // Create reverb for spa-like ambience
-      const reverb = new Tone.Reverb(2); // 2 seconds of reverb
-      reverb.wet.value = 0.3; // Set wet/dry mix
-      await reverb.generate(); // Generate the reverb impulse response
+      const reverb = await this.getSharedReverb();
       
       let source: Tone.ToneAudioNode;
       
       // Check if sound has an MP3 file - play it if available
       if (sound.file) {
-        const filePath = `/sounds/${sound.file}`;
-        console.log('Loading background sound:', sound.name, 'from', filePath);
+        // Use relative path for mobile apps (offline support), absolute path for web
+        const filePath = isMobileApp() ? `./sounds/${sound.file}` : `/sounds/${sound.file}`;
+        console.log('Loading background sound:', sound.name, 'from', filePath, '(mobile:', isMobileApp(), ')');
         
         // Create player and load the file
         const player = new Tone.Player();
@@ -69,8 +95,7 @@ class BackgroundSoundsManager {
         source = player;
         this.activeSounds.set(id, {
           player,
-          gain,
-          reverb
+          gain
         });
       } else {
         // Generate sounds programmatically based on category
@@ -89,8 +114,7 @@ class BackgroundSoundsManager {
           this.activeSounds.set(id, {
             noise: rainNoise,
             filter: rainFilter,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -111,8 +135,7 @@ class BackgroundSoundsManager {
             noise: oceanNoise,
             filter: oceanFilter,
             lfo: oceanLFO,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -130,8 +153,7 @@ class BackgroundSoundsManager {
           this.activeSounds.set(id, {
             noise: forestNoise,
             filter: forestFilter,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -142,8 +164,7 @@ class BackgroundSoundsManager {
           source = whiteNoise;
           this.activeSounds.set(id, {
             noise: whiteNoise,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -154,8 +175,7 @@ class BackgroundSoundsManager {
           source = pinkNoise;
           this.activeSounds.set(id, {
             noise: pinkNoise,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -173,8 +193,7 @@ class BackgroundSoundsManager {
           this.activeSounds.set(id, {
             noise: brownNoise,
             filter: brownFilter,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -195,8 +214,7 @@ class BackgroundSoundsManager {
             noise: windNoise,
             filter: windFilter,
             lfo: windLFO,
-            gain,
-            reverb
+            gain
           });
           break;
           
@@ -207,15 +225,13 @@ class BackgroundSoundsManager {
           source = defaultNoise;
           this.activeSounds.set(id, {
             noise: defaultNoise,
-            gain,
-            reverb
+            gain
           });
         }
       }
       
       // Connect through reverb to master output
       gain.connect(reverb);
-      reverb.connect(Tone.getDestination());
       
       // Start the source
       if (source instanceof Tone.Noise) {
@@ -226,11 +242,14 @@ class BackgroundSoundsManager {
         console.log('Background sound player started:', sound.name);
       }
       
-      // Fade in smoothly (300ms for smooth start)
+      // Fade in smoothly (longer on Android to prevent artifacts)
       const now = Tone.context.currentTime;
+      const fadeInDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
+      const startTime = isMobileApp() ? now + 0.01 : now; // Small delay on Android
+      
       gain.gain.cancelScheduledValues(now);
       gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(volume, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(volume, startTime + fadeInDuration);
       
       console.log('Background sound playing:', sound.name, 'at volume', volume);
       
@@ -268,9 +287,6 @@ class BackgroundSoundsManager {
           if (sound.filter) {
             sound.filter.dispose();
           }
-          if (sound.reverb) {
-            sound.reverb.dispose();
-          }
           sound.gain.dispose();
         }, 350);
       } catch (error) {
@@ -304,4 +320,3 @@ class BackgroundSoundsManager {
 }
 
 export const backgroundSoundsManager = new BackgroundSoundsManager();
-

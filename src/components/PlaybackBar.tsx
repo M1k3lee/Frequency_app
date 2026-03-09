@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Play, Pause, Volume2, Timer, Save, Square, Clock, Music, X } from 'lucide-react';
+import { Play, Pause, Volume2, Timer, Save, Square, Clock, Music, X, Target } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequencyById } from '../data/frequencies';
 import { getBackgroundSoundById } from '../data/backgroundSounds';
@@ -23,7 +23,9 @@ const PlaybackBar: React.FC = () => {
     setPlaybackTimer,
     saveToPlaylist,
     addFrequency,
-    setBackgroundSoundVolume
+    setBackgroundSoundVolume,
+    isFocusMode,
+    setFocusMode
   } = useAppStore();
 
   const [showTimerModal, setShowTimerModal] = useState(false);
@@ -123,7 +125,7 @@ const PlaybackBar: React.FC = () => {
       // Nothing playing - start with default
       const defaultFreq = getFrequencyById('alpha-10');
       if (defaultFreq) {
-        await addFrequency(defaultFreq);
+        await addFrequency(defaultFreq, 0.7, 0, { source: 'Quick Resume' });
         setPlaying(true);
       }
     }
@@ -228,6 +230,15 @@ const PlaybackBar: React.FC = () => {
           </button>
 
           <button
+            className={`playback-btn secondary focus-mode-btn ${isFocusMode ? 'active' : ''}`}
+            onClick={() => setFocusMode(!isFocusMode)}
+            aria-label={isFocusMode ? 'Exit focus mode' : 'Enter focus mode'}
+            title={isFocusMode ? 'Exit focus mode' : 'Enter focus mode'}
+          >
+            <Target size={16} />
+          </button>
+
+          <button
             className="playback-btn secondary"
             onClick={async () => await stopAll()}
             aria-label="Stop all"
@@ -296,4 +307,3 @@ const PlaybackBar: React.FC = () => {
 };
 
 export default PlaybackBar;
-

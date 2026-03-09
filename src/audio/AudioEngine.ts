@@ -7,6 +7,8 @@ import { isMobileApp } from '../utils/isMobileApp';
 class AudioEngine {
   private context: Tone.BaseContext | null = null;
   private masterVolume: Tone.Volume;
+  private masterCompressor: Tone.Compressor;
+  private masterLimiter: Tone.Limiter;
   private activeOscillators: Map<string, {
     left: Tone.Oscillator;
     right: Tone.Oscillator;
@@ -15,17 +17,37 @@ class AudioEngine {
     gain: Tone.Gain;
     rightGain?: Tone.Gain;
     pan: Tone.Panner;
+    rightPan?: Tone.Panner;
+    mode: 'fm-carrier' | 'binaural' | 'tone';
   }> = new Map();
   private gatewayGenerator: GatewaySignalGenerator | null = null;
   private isInitialized: boolean = false;
   private isReady: boolean = false;
   private contextMonitorInterval: number | null = null;
+  private readonly MAX_BRAINWAVE_BEAT_HZ = 40;
+  private readonly BINAURAL_STEREO_SPREAD = 0.85;
 
   constructor() {
+    // Prefer playback stability over low latency to reduce underruns/crackle.
+    try {
+      Tone.setContext(new Tone.Context({
+        latencyHint: 'playback'
+      }));
+    } catch (error) {
+      console.warn('AudioEngine: Unable to override Tone context settings:', error);
+    }
+
     // According to Chrome autoplay policy, we should create AudioContext only after user gesture
-    // But we can create the Volume node now - it will connect when context is running
-    // Start with 0dB (full volume) - will be adjusted by setMasterVolume
-    this.masterVolume = new Tone.Volume(0).toDestination();
+    // But we can create the master chain now - it will connect when context is running.
+    this.masterVolume = new Tone.Volume(0);
+    this.masterCompressor = new Tone.Compressor({
+      threshold: -18,
+      ratio: 3,
+      attack: 0.01,
+      release: 0.2
+    });
+    this.masterLimiter = new Tone.Limiter(-1);
+    this.masterVolume.chain(this.masterCompressor, this.masterLimiter, Tone.getDestination());
     console.log('AudioEngine: Master volume node created');
     console.log('Master volume connected to destination:', this.masterVolume.volume.value, 'dB');
     console.log('Tone.js context state:', Tone.context.state);
@@ -195,6 +217,28 @@ class AudioEngine {
     }
   }
 
+  private isBrainwaveBeatFrequency(targetHz: number): boolean {
+    return targetHz > 0 && targetHz <= this.MAX_BRAINWAVE_BEAT_HZ;
+  }
+
+  private getBinauralCarrierFrequency(
+    beatFreq: number,
+    headphoneQuality: 'standard' | 'high-quality'
+  ): number {
+    // Keep beta/gamma carriers in the most audible range for phone/laptop speakers.
+    const preferredBase = headphoneQuality === 'high-quality' ? 260 : 432;
+    const minSafeCarrier = beatFreq / 2 + 60;
+    return Math.min(1600, Math.max(preferredBase, minSafeCarrier));
+  }
+
+  private getStereoPans(pan: number): { left: number; right: number } {
+    const clampedPan = Math.max(-1, Math.min(1, pan));
+    return {
+      left: Math.max(-1, Math.min(1, clampedPan - this.BINAURAL_STEREO_SPREAD)),
+      right: Math.max(-1, Math.min(1, clampedPan + this.BINAURAL_STEREO_SPREAD))
+    };
+  }
+
   async playFrequency(frequency: Frequency, volume: number = 0.7, pan: number = 0, headphoneQuality: 'standard' | 'high-quality' = 'standard'): Promise<string> {
     // Check if this is a Gateway signal
     const gatewayConfig = getGatewayConfig(frequency.id);
@@ -208,7 +252,7 @@ class AudioEngine {
     // Use Tone.js for regular frequencies (existing implementation)
     // Ensure audio context is running - critical for Chrome autoplay policy
     await this.ensureInitialized();
-    
+
     // Double-check context state and resume if needed
     // This is especially important when playing from modals/overlays
     if (Tone.context.state === 'suspended') {
@@ -223,32 +267,30 @@ class AudioEngine {
     }
 
     const id = `${frequency.id}-${Date.now()}`;
-    
+
     try {
-      // Increase volume significantly for audibility
-      const adjustedVolume = Math.min(1.0, volume * 2.0); // Boost by 100%, cap at 1.0
-      
-      // For very low frequencies (< 10Hz), use carrier frequency modulation
-      // Carrier frequency selection based on headphone quality preference
-      // Standard: Higher carriers (300-500Hz) for better phone speaker compatibility
-      // High Quality: Lower carriers (200Hz) for deeper bass response with premium headphones
-      if (frequency.frequency < 10) {
+      const targetFrequencyHz = Math.max(0.0001, frequency.frequency);
+      // Keep per-voice gain conservative to avoid clipping when layers combine.
+      const adjustedVolume = Math.max(0.0001, Math.min(1.0, volume));
+
+      // For very low frequencies (<10Hz), use frequency modulation for a stable audible carrier.
+      if (targetFrequencyHz < 10) {
         let carrierFreq: number;
         let modulationDepth: number;
-        
+
         if (headphoneQuality === 'high-quality') {
           // High quality: Use lower carrier (200Hz) for deeper bass response with premium headphones
           carrierFreq = 200;
-          modulationDepth = frequency.frequency < 2 ? 60 : 50; // Modulate by ±50-60Hz
+          modulationDepth = targetFrequencyHz < 2 ? 60 : 50; // Modulate by +/-50-60Hz
         } else {
           // Standard: Use higher carrier for better phone speaker compatibility
-          // Very low frequencies (< 2Hz) use 400Hz, others use 300Hz
-          carrierFreq = frequency.frequency < 2 ? 400 : 300;
-          modulationDepth = frequency.frequency < 2 ? 80 : 60; // Modulate by ±60-80Hz for audible effect
+          // Very low frequencies (<2Hz) use 400Hz, others use 300Hz
+          carrierFreq = targetFrequencyHz < 2 ? 400 : 300;
+          modulationDepth = targetFrequencyHz < 2 ? 80 : 60; // Modulate by +/-60-80Hz
         }
-        
-        const modulationFreq = frequency.frequency;
-        
+
+        const modulationFreq = targetFrequencyHz;
+
         // Create carrier oscillator at base frequency
         // Set phase to 0 to ensure smooth start and prevent clicks
         const carrier = new Tone.Oscillator({
@@ -256,98 +298,88 @@ class AudioEngine {
           type: 'sine',
           phase: 0
         });
-        
+
         // Create gain for volume control - start at 0 for smooth fade-in
         const gain = new Tone.Gain(0);
         carrier.connect(gain);
-        
+
         // Create panner for stereo positioning
-        const panNode = new Tone.Panner(pan);
+        const panNode = new Tone.Panner(Math.max(-1, Math.min(1, pan)));
         gain.connect(panNode);
         panNode.connect(this.masterVolume);
-        
+
         // Verify context is running before starting
         if (Tone.context.state !== 'running') {
           console.error('Cannot start carrier: Audio context not running!');
           throw new Error('Audio context must be running to play audio');
         }
-        
+
         // Use proper Web Audio API scheduling for smooth fade-in
         const now = Tone.context.currentTime;
         // On Android, use slightly longer fade-in to prevent audio artifacts
         const fadeInDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
-        
+
         // Ensure gain is explicitly 0 before starting to prevent pops
         gain.gain.cancelScheduledValues(now);
         gain.gain.setValueAtTime(0, now);
-        
+
         // On Android, add a tiny delay before starting to ensure context is stable
         const startTime = isMobileApp() ? now + 0.01 : now;
-        
+
         // Create LFO for frequency modulation
         // Tone.js LFO: frequency, min, max
         // Use a smoother LFO to prevent discontinuities that cause crackling
         const lfo = new Tone.LFO(modulationFreq, -modulationDepth, modulationDepth);
-        // Set LFO type to 'sine' for smoother modulation (prevents sharp transitions that cause crackling)
         lfo.type = 'sine';
-        // Connect LFO to modulate the carrier's frequency parameter
-        // This creates smooth frequency modulation without discontinuities
         lfo.connect(carrier.frequency);
-        
+
         // Start LFO slightly before carrier to ensure smooth modulation from the start
-        // This prevents any initial frequency jumps that could cause crackling
         // On Android, use a slightly longer pre-start delay for better stability
         const lfoPreStartDelay = isMobileApp() ? 0.01 : 0.005;
         const lfoStartTime = Math.max(0, startTime - lfoPreStartDelay);
         lfo.start(lfoStartTime);
-        
+
         // On Android, add a small additional delay before starting carrier for extra stability
-        // This helps prevent audio artifacts on Android WebView
         const carrierStartTime = isMobileApp() ? startTime + 0.005 : startTime;
         carrier.start(carrierStartTime);
-        
+
         // Smooth exponential fade-in (sounds more natural than linear)
         gain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
-        
-        // Verify it actually started
+
         setTimeout(() => {
           if (carrier.state !== 'started') {
             console.error('Carrier oscillator failed to start! State:', carrier.state);
           }
         }, 100);
-        
-        // Verify connection chain
-        console.log('Playing carrier frequency:', carrierFreq, 'Hz modulated by', modulationFreq, 'Hz (±', modulationDepth, 'Hz) at volume', adjustedVolume);
+
+        console.log('Playing carrier frequency:', carrierFreq, 'Hz modulated by', modulationFreq, 'Hz (+/-', modulationDepth, 'Hz) at volume', adjustedVolume);
         console.log('Carrier state:', carrier.state, 'LFO state:', lfo.state, 'Gain value:', gain.gain.value);
         console.log('Master volume dB:', this.masterVolume.volume.value);
         console.log('Carrier frequency value:', carrier.frequency.value);
         console.log('Connection chain: carrier -> gain -> pan -> masterVolume -> destination');
-        
+
         this.activeOscillators.set(id, {
           left: carrier as any,
           right: carrier as any,
           carrier,
           lfo,
           gain,
-          pan: panNode
+          pan: panNode,
+          mode: 'fm-carrier'
         });
-      } else {
-        // Standard binaural beat generation
-        // Use a carrier frequency in the audible range and create binaural beat
-        const beatFreq = frequency.frequency; // The desired beat frequency (Hz)
-        // Use higher carrier for very high frequencies to avoid negative/zero leftFreq
-        const carrierFreq = beatFreq > 300 ? 500 : 200; // Base frequency in audible range
-        
+      } else if (this.isBrainwaveBeatFrequency(targetFrequencyHz)) {
+        // Brainwave range (10-40Hz): generate true binaural beat.
+        const beatFreq = targetFrequencyHz;
+        const carrierFreq = this.getBinauralCarrierFrequency(beatFreq, headphoneQuality);
+
         // Create binaural beat: left and right differ by beatFreq
-        // This creates the perception of the beat frequency in the brain
         const leftFreq = carrierFreq - beatFreq / 2;
         const rightFreq = carrierFreq + beatFreq / 2;
-        
+
         // Ensure both are in audible range (20-20000 Hz)
         const safeLeftFreq = Math.max(20, Math.min(20000, leftFreq));
         const safeRightFreq = Math.max(20, Math.min(20000, rightFreq));
-        
-        // Create oscillators with phase set to 0 to ensure smooth start and prevent clicks
+
         const leftOsc = new Tone.Oscillator({
           frequency: safeLeftFreq,
           type: 'sine',
@@ -358,15 +390,16 @@ class AudioEngine {
           type: 'sine',
           phase: 0
         });
-        
+
         // Create separate gains for left and right - start at 0 for smooth fade-in
         const leftGain = new Tone.Gain(0);
         const rightGain = new Tone.Gain(0);
-        
-        // Create panners for stereo positioning
-        const leftPan = new Tone.Panner(Math.max(-1, -1 + pan));
-        const rightPan = new Tone.Panner(Math.min(1, 1 + pan));
-        
+
+        // Keep binaural channels separated without hard-L/R lock for better speaker compatibility.
+        const stereoPans = this.getStereoPans(pan);
+        const leftPan = new Tone.Panner(stereoPans.left);
+        const rightPan = new Tone.Panner(stereoPans.right);
+
         // Connect: osc -> gain -> panner -> masterVolume -> destination
         leftOsc.connect(leftGain);
         rightOsc.connect(rightGain);
@@ -374,63 +407,100 @@ class AudioEngine {
         rightGain.connect(rightPan);
         leftPan.connect(this.masterVolume);
         rightPan.connect(this.masterVolume);
-        
+
         // Verify context is running before starting
         if (Tone.context.state !== 'running') {
           console.error('Cannot start oscillators: Audio context not running!');
           throw new Error('Audio context must be running to play audio');
         }
-        
-        // Use proper Web Audio API scheduling for smooth fade-in
+
         const now = Tone.context.currentTime;
-        // On Android, use slightly longer fade-in to prevent audio artifacts
         const fadeInDuration = isMobileApp() ? 0.4 : 0.3; // 400ms on mobile, 300ms on web
-        
-        // Ensure gains are explicitly 0 before starting to prevent pops
+
         leftGain.gain.cancelScheduledValues(now);
         rightGain.gain.cancelScheduledValues(now);
         leftGain.gain.setValueAtTime(0, now);
         rightGain.gain.setValueAtTime(0, now);
-        
-        // On Android, add a tiny delay before starting to ensure context is stable
+
         const startTime = isMobileApp() ? now + 0.01 : now;
-        
-        // Start oscillators with zero volume at exact same time
         leftOsc.start(startTime);
         rightOsc.start(startTime);
-        
-        // Smooth exponential fade-in (sounds more natural than linear)
+
         leftGain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
         rightGain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
-        
-        // Verify they actually started
+
         setTimeout(() => {
           if (leftOsc.state !== 'started' || rightOsc.state !== 'started') {
             console.error('Oscillators failed to start! Left:', leftOsc.state, 'Right:', rightOsc.state);
           }
         }, 100);
-        
-        // Verify everything is connected and working
+
         console.log('Playing binaural beat:', safeLeftFreq.toFixed(1), 'Hz /', safeRightFreq.toFixed(1), 'Hz (beat:', beatFreq.toFixed(1), 'Hz) at volume', adjustedVolume.toFixed(2));
         console.log('Left osc state:', leftOsc.state, 'Right osc state:', rightOsc.state);
         console.log('Left gain:', leftGain.gain.value, 'Right gain:', rightGain.gain.value);
         console.log('Master volume dB:', this.masterVolume.volume.value);
         console.log('Left frequency:', leftOsc.frequency.value, 'Right frequency:', rightOsc.frequency.value);
         console.log('Connection chain: osc -> gain -> pan -> masterVolume -> destination');
-        
-        // Verify master volume is connected to destination
-        console.log('Master volume connected to destination:', this.masterVolume.volume.value, 'dB');
-        
-        // Store both gains for volume control
+
         this.activeOscillators.set(id, {
           left: leftOsc,
           right: rightOsc,
           gain: leftGain,
+          rightGain,
           pan: leftPan,
-          rightGain: rightGain
-        } as any);
+          rightPan,
+          mode: 'binaural'
+        });
+      } else {
+        // Tonal range (>40Hz): play exact frequency to preserve frequency accuracy.
+        const toneOsc = new Tone.Oscillator({
+          frequency: targetFrequencyHz,
+          type: 'sine',
+          phase: 0
+        });
+
+        const gain = new Tone.Gain(0);
+        toneOsc.connect(gain);
+
+        const panNode = new Tone.Panner(Math.max(-1, Math.min(1, pan)));
+        gain.connect(panNode);
+        panNode.connect(this.masterVolume);
+
+        if (Tone.context.state !== 'running') {
+          console.error('Cannot start tone oscillator: Audio context not running!');
+          throw new Error('Audio context must be running to play audio');
+        }
+
+        const now = Tone.context.currentTime;
+        const fadeInDuration = isMobileApp() ? 0.4 : 0.3;
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.setValueAtTime(0, now);
+
+        const startTime = isMobileApp() ? now + 0.01 : now;
+        toneOsc.start(startTime);
+        gain.gain.exponentialRampToValueAtTime(adjustedVolume, startTime + fadeInDuration);
+
+        setTimeout(() => {
+          if (toneOsc.state !== 'started') {
+            console.error('Tone oscillator failed to start! State:', toneOsc.state);
+          }
+        }, 100);
+
+        console.log('Playing exact tone:', targetFrequencyHz.toFixed(2), 'Hz at volume', adjustedVolume.toFixed(2));
+        console.log('Tone osc state:', toneOsc.state, 'Gain:', gain.gain.value);
+        console.log('Master volume dB:', this.masterVolume.volume.value);
+        console.log('Connection chain: tone -> gain -> pan -> masterVolume -> destination');
+
+        this.activeOscillators.set(id, {
+          left: toneOsc as any,
+          right: toneOsc as any,
+          carrier: toneOsc,
+          gain,
+          pan: panNode,
+          mode: 'tone'
+        });
       }
-      
+
       return id;
     } catch (error) {
       console.error('Error playing frequency:', error);
@@ -444,13 +514,14 @@ class AudioEngine {
     if (id.startsWith('gateway-') || this.gatewayGenerator) {
       if (this.gatewayGenerator) {
         this.gatewayGenerator.stop();
-        // Wait for fade-out to complete before disposing (100ms master fade + 100ms layer fade + 30ms buffer)
+        // Wait for fade-out to complete before disposing and disconnecting output nodes.
         setTimeout(() => {
           if (this.gatewayGenerator) {
+            this.cleanupGatewayOutputNodes();
             this.gatewayGenerator.dispose();
             this.gatewayGenerator = null;
           }
-        }, 230);
+        }, 650);
       }
       return;
     }
@@ -503,21 +574,13 @@ class AudioEngine {
         setTimeout(() => {
           try {
             // Dispose of all nodes after fade-out completes
-            osc.left.dispose();
-            if (osc.right) {
-              osc.right.dispose();
+            const nodes = [osc.left, osc.right, osc.carrier, osc.lfo, osc.gain, osc.rightGain, osc.pan, osc.rightPan];
+            const disposed = new Set();
+            for (const node of nodes) {
+              if (!node || disposed.has(node)) continue;
+              disposed.add(node);
+              (node as any).dispose?.();
             }
-            if (osc.carrier) {
-              osc.carrier.dispose();
-            }
-            if (osc.lfo) {
-              osc.lfo.dispose();
-            }
-            osc.gain.dispose();
-            if (osc.rightGain) {
-              osc.rightGain.dispose();
-            }
-            osc.pan.dispose();
           } catch (error) {
             console.error('Error disposing oscillators:', error);
           }
@@ -539,6 +602,7 @@ class AudioEngine {
 
     // Stop any existing Gateway signal
     if (this.gatewayGenerator) {
+      this.cleanupGatewayOutputNodes();
       this.gatewayGenerator.dispose();
       this.gatewayGenerator = null;
     }
@@ -557,20 +621,45 @@ class AudioEngine {
     this.gatewayGenerator = new GatewaySignalGenerator(webAudioContext);
     await this.gatewayGenerator.initialize(config);
 
-    // Create a Web Audio GainNode to match Tone.js master volume
-    // This allows Gateway signals to respect the master volume control
+    // Normalize complex layer stacks to preserve headroom and avoid intermittent clipping.
+    const normalization = this.calculateGatewayNormalization(config);
+    const clampedBaseVolume = Math.max(0.0001, Math.min(1, volume));
+    const normalizedBaseVolume = clampedBaseVolume * normalization;
+
+    // Create output chain for Gateway signals:
+    // gatewayGain -> compressor -> limiter -> destination
     const gatewayGain = webAudioContext.createGain();
+    const gatewayCompressor = webAudioContext.createDynamicsCompressor();
+    const gatewayLimiter = webAudioContext.createDynamicsCompressor();
+
+    gatewayCompressor.threshold.value = -18;
+    gatewayCompressor.knee.value = 24;
+    gatewayCompressor.ratio.value = 3;
+    gatewayCompressor.attack.value = 0.003;
+    gatewayCompressor.release.value = 0.2;
+
+    gatewayLimiter.threshold.value = -1;
+    gatewayLimiter.knee.value = 0;
+    gatewayLimiter.ratio.value = 20;
+    gatewayLimiter.attack.value = 0.001;
+    gatewayLimiter.release.value = 0.05;
+
     const masterVol = this.masterVolume.volume.value;
     const masterVolLinear = Tone.dbToGain(masterVol);
-    gatewayGain.gain.value = volume * masterVolLinear;
+    gatewayGain.gain.value = normalizedBaseVolume * masterVolLinear;
     
-    // Connect: Gateway Generator -> Gateway Gain -> Destination
+    // Connect: Gateway Generator -> Gateway Gain -> Compressor -> Limiter -> Destination
     this.gatewayGenerator.connect(gatewayGain);
-    gatewayGain.connect(webAudioContext.destination);
+    gatewayGain.connect(gatewayCompressor);
+    gatewayCompressor.connect(gatewayLimiter);
+    gatewayLimiter.connect(webAudioContext.destination);
     
     // Store gateway gain for volume updates
     (this.gatewayGenerator as any).gatewayGain = gatewayGain;
-    (this.gatewayGenerator as any).baseVolume = volume;
+    (this.gatewayGenerator as any).baseVolume = normalizedBaseVolume;
+    (this.gatewayGenerator as any).gatewayCompressor = gatewayCompressor;
+    (this.gatewayGenerator as any).gatewayLimiter = gatewayLimiter;
+    (this.gatewayGenerator as any).gatewayNormalization = normalization;
 
     // Start playing
     this.gatewayGenerator.start();
@@ -592,6 +681,7 @@ class AudioEngine {
         // Wait for fade-out to complete before disposing (300ms master fade + 300ms layer fade + 50ms buffer)
         await new Promise(resolve => setTimeout(resolve, 650));
         if (this.gatewayGenerator) {
+          this.cleanupGatewayOutputNodes();
           this.gatewayGenerator.dispose();
           this.gatewayGenerator = null;
         }
@@ -600,6 +690,7 @@ class AudioEngine {
         // Force cleanup even if there's an error
         if (this.gatewayGenerator) {
           try {
+            this.cleanupGatewayOutputNodes();
             this.gatewayGenerator.dispose();
           } catch (e) {
             console.error('Error disposing Gateway generator:', e);
@@ -637,14 +728,22 @@ class AudioEngine {
   setVolume(id: string, volume: number): void {
     const osc = this.activeOscillators.get(id);
     if (osc) {
+      const target = Math.max(0.0001, Math.min(1, volume));
+      const now = Tone.context.currentTime;
       if (osc.carrier) {
-        // Carrier modulation - single gain
-        osc.gain.gain.value = volume;
+        // Carrier modulation - smooth ramp to avoid zipper noise.
+        osc.gain.gain.cancelScheduledValues(now);
+        osc.gain.gain.setValueAtTime(Math.max(0.0001, osc.gain.gain.value), now);
+        osc.gain.gain.exponentialRampToValueAtTime(target, now + 0.03);
       } else {
-        // Binaural beats - update both left and right gains
-        osc.gain.gain.value = volume; // Left gain
+        // Binaural beats - update both left and right gains with a short ramp.
+        osc.gain.gain.cancelScheduledValues(now);
+        osc.gain.gain.setValueAtTime(Math.max(0.0001, osc.gain.gain.value), now);
+        osc.gain.gain.exponentialRampToValueAtTime(target, now + 0.03);
         if (osc.rightGain) {
-          osc.rightGain.gain.value = volume; // Right gain
+          osc.rightGain.gain.cancelScheduledValues(now);
+          osc.rightGain.gain.setValueAtTime(Math.max(0.0001, osc.rightGain.gain.value), now);
+          osc.rightGain.gain.exponentialRampToValueAtTime(target, now + 0.03);
         }
       }
     }
@@ -653,16 +752,21 @@ class AudioEngine {
   setPan(id: string, pan: number): void {
     const osc = this.activeOscillators.get(id);
     if (osc) {
-      osc.pan.pan.value = pan;
+      const clampedPan = Math.max(-1, Math.min(1, pan));
+      if (osc.mode === 'binaural' && osc.rightPan) {
+        const stereoPans = this.getStereoPans(clampedPan);
+        osc.pan.pan.value = stereoPans.left;
+        osc.rightPan.pan.value = stereoPans.right;
+      } else {
+        osc.pan.pan.value = clampedPan;
+      }
     }
   }
 
   setMasterVolume(volume: number): void {
-    // Convert 0-1 range to dB
-    // Volume of 1.0 = 0dB (full volume), 0.5 = -6dB, 0.1 = -20dB
-    // Use a minimum of -12dB (about 25% volume) to ensure audibility
-    const minDb = -12;
-    const dbValue = volume > 0 ? Math.max(minDb, Tone.gainToDb(volume)) : -60;
+    // Convert 0-1 range to dB with full dynamic range.
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    const dbValue = clampedVolume > 0 ? Tone.gainToDb(clampedVolume) : -60;
     this.masterVolume.volume.value = dbValue;
     console.log('Master volume set to:', volume, '(', dbValue.toFixed(1), 'dB)');
     console.log('Master volume node connected:', this.masterVolume.volume.value, 'dB');
@@ -672,8 +776,40 @@ class AudioEngine {
       const gatewayGain = (this.gatewayGenerator as any).gatewayGain;
       const baseVolume = (this.gatewayGenerator as any).baseVolume || 0.7;
       if (gatewayGain) {
-        gatewayGain.gain.value = baseVolume * volume;
+        gatewayGain.gain.value = baseVolume * clampedVolume;
       }
+    }
+  }
+
+  private calculateGatewayNormalization(config: NonNullable<ReturnType<typeof getGatewayConfig>>): number {
+    const carrierPower = config.carrierLayers.reduce((sum, layer) => {
+      // Each carrier layer has L/R oscillators.
+      return sum + (layer.volume * layer.volume * 2);
+    }, 0);
+    const isochronicPower = config.isochronicLayers.reduce((sum, layer) => {
+      return sum + (layer.volume * layer.volume);
+    }, 0);
+    const estimatedRms = Math.sqrt(carrierPower + isochronicPower);
+    if (estimatedRms <= 0) {
+      return 1;
+    }
+    // Target ~-6 dB headroom before output processing.
+    return Math.min(1, 0.5 / estimatedRms);
+  }
+
+  private cleanupGatewayOutputNodes(): void {
+    if (!this.gatewayGenerator) return;
+
+    const gatewayGain = (this.gatewayGenerator as any).gatewayGain as GainNode | undefined;
+    const gatewayCompressor = (this.gatewayGenerator as any).gatewayCompressor as DynamicsCompressorNode | undefined;
+    const gatewayLimiter = (this.gatewayGenerator as any).gatewayLimiter as DynamicsCompressorNode | undefined;
+
+    try {
+      gatewayGain?.disconnect();
+      gatewayCompressor?.disconnect();
+      gatewayLimiter?.disconnect();
+    } catch (error) {
+      console.error('Error disconnecting Gateway output nodes:', error);
     }
   }
 
@@ -746,4 +882,5 @@ class AudioEngine {
 }
 
 export const audioEngine = new AudioEngine();
+
 

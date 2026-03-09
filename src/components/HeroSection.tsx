@@ -68,7 +68,7 @@ const HeroSection: React.FC = () => {
       const defaultFreq = getFrequencyById('alpha-10');
       if (defaultFreq) {
         await stopAll(); // Ensure clean state
-        await addFrequency(defaultFreq);
+        await addFrequency(defaultFreq, 0.7, 0, { source: 'Quick Start' });
         setPlaying(true);
       }
     }
@@ -78,7 +78,7 @@ const HeroSection: React.FC = () => {
     await stopAll();
     const freq = getFrequencyById(freqId);
     if (freq) {
-      await addFrequency(freq);
+      await addFrequency(freq, 0.7, 0, { source: 'Mode Session' });
       setPlaying(true);
     }
   };
@@ -89,7 +89,7 @@ const HeroSection: React.FC = () => {
     await stopAll();
     const freq = getFrequencyById(idToUse);
     if (freq) {
-      await addFrequency(freq);
+      await addFrequency(freq, 0.7, 0, { source: 'Frequency Pick' });
       setPlaying(true);
     }
   };
@@ -257,4 +257,3 @@ const HeroSection: React.FC = () => {
 };
 
 export default HeroSection;
-

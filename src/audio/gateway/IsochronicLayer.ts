@@ -30,7 +30,8 @@ export class IsochronicNode {
 
     this.lfo = audioContext.createOscillator();
     this.lfo.frequency.value = config.pulseRate;
-    this.lfo.type = 'square';
+    // Triangle modulation keeps pulses clear while avoiding hard discontinuities.
+    this.lfo.type = 'triangle';
 
     this.gain = audioContext.createGain();
     this.lfoGain = audioContext.createGain();
@@ -108,14 +109,16 @@ export class IsochronicNode {
 
   setVolume(volume: number): void {
     const now = this.audioContext.currentTime;
+    const safeVolume = Math.max(0.0001, Math.min(1, volume));
     this.gain.gain.cancelScheduledValues(now);
-    const minGain = 0;
-    const maxGain = volume;
+    const minGain = 0.0001;
+    const maxGain = safeVolume;
     const adjustedCenter = minGain + (maxGain - minGain) * this.config.dutyCycle;
     const adjustedDepth = Math.min(adjustedCenter - minGain, maxGain - adjustedCenter);
     this.lfoGain.gain.value = adjustedDepth;
-    this.gain.gain.setValueAtTime(adjustedCenter, now);
-    this.config.volume = volume;
+    this.gain.gain.setValueAtTime(Math.max(0.0001, this.gain.gain.value), now);
+    this.gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, adjustedCenter), now + 0.03);
+    this.config.volume = safeVolume;
   }
 
   dispose(): void {

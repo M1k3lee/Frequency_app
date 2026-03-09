@@ -62,7 +62,7 @@ const FrequencyLibrary: React.FC = () => {
     await stopAll();
     
     // Then play the selected frequency
-    await addFrequency(frequency);
+    await addFrequency(frequency, 0.7, 0, { source: 'Frequency Library' });
     setPlaying(true);
   };
 

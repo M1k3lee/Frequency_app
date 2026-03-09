@@ -12,6 +12,7 @@
   padding-bottom: 120px; /* Space for playback bar */
   background: transparent; /* Allow visuals to show through */
   pointer-events: auto; /* Ensure content can be interacted with */
+  transition: opacity 0.35s ease;
 }
 
 @media (max-width: 768px) {
@@ -20,3 +21,33 @@
   }
 }
 
+body.focus-mode-active .app-header,
+body.focus-mode-active .hero-section,
+body.focus-mode-active .frequency-library,
+body.focus-mode-active .app-footer,
+body.focus-mode-active .admob-native-ad-container {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  height: 0;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+body.focus-mode-active .playback-bar {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  width: min(980px, calc(100vw - 2rem));
+  bottom: 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+}
+
+body.focus-mode-active .fullscreen-toggle-btn {
+  bottom: 7.4rem;
+}

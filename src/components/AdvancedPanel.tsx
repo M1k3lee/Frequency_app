@@ -33,7 +33,7 @@ const AdvancedPanel: React.FC = () => {
   const handleAddFrequency = async () => {
     const freq = frequencies.find(f => f.id === selectedFreq);
     if (freq) {
-      await addFrequency(freq);
+      await addFrequency(freq, 0.7, 0, { source: 'Advanced Mix' });
       setPlaying(true);
       
       // If duration is set, schedule auto-stop
@@ -266,4 +266,3 @@ const AdvancedPanel: React.FC = () => {
 };
 
 export default AdvancedPanel;
-

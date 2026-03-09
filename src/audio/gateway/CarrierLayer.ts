@@ -109,11 +109,14 @@ export class CarrierLayerNode {
 
   setVolume(volume: number): void {
     const now = this.audioContext.currentTime;
+    const safeVolume = Math.max(0.0001, Math.min(1, volume));
     this.leftGain.gain.cancelScheduledValues(now);
     this.rightGain.gain.cancelScheduledValues(now);
-    this.leftGain.gain.setValueAtTime(volume, now);
-    this.rightGain.gain.setValueAtTime(volume, now);
-    this.config.volume = volume;
+    this.leftGain.gain.setValueAtTime(Math.max(0.0001, this.leftGain.gain.value), now);
+    this.rightGain.gain.setValueAtTime(Math.max(0.0001, this.rightGain.gain.value), now);
+    this.leftGain.gain.exponentialRampToValueAtTime(safeVolume, now + 0.03);
+    this.rightGain.gain.exponentialRampToValueAtTime(safeVolume, now + 0.03);
+    this.config.volume = safeVolume;
   }
 
   dispose(): void {

@@ -1,137 +1,139 @@
 import React, { useEffect, useState } from 'react';
-import { AdMob, BannerAdOptions, BannerAdSize, BannerAdPosition, BannerAdPluginEvents } from '@capacitor-community/admob';
+import {
+  AdMob,
+  BannerAdOptions,
+  BannerAdPluginEvents,
+  BannerAdPosition,
+  BannerAdSize,
+} from '@capacitor-community/admob';
 import { Capacitor } from '@capacitor/core';
+import { ANDROID_ADMOB_TEST_BANNER_AD_UNIT_ID } from '../config/admob';
 import './AdMobNativeAd.css';
-
-/**
- * AdMob Banner Ad Component
- * 
- * Production Mode: Live ads are enabled.
- * - initializeForTesting: false - Production mode
- * - isTesting: false - Shows live ads from your ad unit
- */
 
 interface AdMobNativeAdProps {
   adUnitId: string;
   className?: string;
+  useTestAds?: boolean;
 }
 
-// Track if AdMob has been initialized
-let admobInitialized = false;
+let admobInitPromise: Promise<void> | null = null;
 
-const AdMobNativeAd: React.FC<AdMobNativeAdProps> = ({ adUnitId, className = '' }) => {
+const isAndroidNative = (): boolean =>
+  Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+
+const ensureAdMobInitialized = async (useTestAds: boolean): Promise<void> => {
+  if (!admobInitPromise) {
+    admobInitPromise = AdMob.initialize({
+      testingDevices: [],
+      initializeForTesting: useTestAds,
+    });
+  }
+
+  await admobInitPromise;
+};
+
+const AdMobNativeAd: React.FC<AdMobNativeAdProps> = ({
+  adUnitId,
+  className = '',
+  useTestAds = false,
+}) => {
   const [adLoaded, setAdLoaded] = useState(false);
   const [adError, setAdError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
-    let loadedListener: any = null;
-    let failedListener: any = null;
+    let loadedListener: { remove: () => Promise<void> } | null = null;
+    let failedListener: { remove: () => Promise<void> } | null = null;
 
-    const loadAd = async () => {
-      // Only load on Android native platform
-      if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') {
+    const loadBanner = async () => {
+      if (!isAndroidNative()) {
+        return;
+      }
+
+      const resolvedAdUnitId = useTestAds
+        ? ANDROID_ADMOB_TEST_BANNER_AD_UNIT_ID
+        : adUnitId;
+
+      if (!resolvedAdUnitId) {
+        if (mounted) {
+          setAdError('Missing Android AdMob banner ad unit ID');
+        }
         return;
       }
 
       try {
-        // Initialize AdMob only once
-        if (!admobInitialized) {
-          await AdMob.initialize({
-            testingDevices: [],
-            initializeForTesting: false, // Production mode - live ads
-          });
-          admobInitialized = true;
-        }
+        await ensureAdMobInitialized(useTestAds);
 
-        // Set up event listeners for banner ad
-        loadedListener = AdMob.addListener(BannerAdPluginEvents.Loaded, () => {
-          if (mounted) {
+        loadedListener = await AdMob.addListener(
+          BannerAdPluginEvents.Loaded,
+          () => {
+            if (!mounted) return;
             setAdLoaded(true);
             setAdError(null);
           }
-        });
+        );
 
-        failedListener = AdMob.addListener(BannerAdPluginEvents.FailedToLoad, (error: any) => {
-          console.error('AdMob Banner Failed to Load:', error);
-          if (mounted) {
-            setAdError(error.message || 'Failed to load ad');
+        failedListener = await AdMob.addListener(
+          BannerAdPluginEvents.FailedToLoad,
+          (error: any) => {
+            if (!mounted) return;
             setAdLoaded(false);
+            setAdError(error?.message || error?.code || 'Failed to load ad');
+            console.error('[AdMob] Banner failed to load:', error);
           }
-        });
+        );
 
-        // Small delay to ensure everything is ready
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Ensure we do not stack banners if component remounts.
+        await AdMob.hideBanner().catch(() => undefined);
 
-        // Show banner ad
         const options: BannerAdOptions = {
-          adId: adUnitId,
+          adId: resolvedAdUnitId,
           adSize: BannerAdSize.ADAPTIVE_BANNER,
-          position: BannerAdPosition.TOP_CENTER,
-          margin: 0,
-          // Production mode - shows live ads
-          isTesting: false
+          position: BannerAdPosition.BOTTOM_CENTER,
+          margin: 84,
+          isTesting: useTestAds,
         };
 
         await AdMob.showBanner(options);
       } catch (error: any) {
-        console.error('AdMob Banner Error:', error);
         if (mounted) {
-          setAdError(error.message || 'Failed to load ad');
+          setAdLoaded(false);
+          setAdError(error?.message || error?.code || 'Failed to initialize/show ad');
         }
+        console.error('[AdMob] Banner error:', error);
       }
     };
 
-    // Delay to ensure DOM and AdMob are ready
+    // Small delay helps avoid startup race conditions in WebView.
     const timer = setTimeout(() => {
-      loadAd();
-    }, 1000);
+      loadBanner();
+    }, 500);
 
-    // Cleanup function
     return () => {
       mounted = false;
       clearTimeout(timer);
-      
-      // Remove listeners
-      if (loadedListener) {
-        loadedListener.remove();
-      }
-      if (failedListener) {
-        failedListener.remove();
-      }
-      
-      // Hide banner when component unmounts
-      AdMob.hideBanner().catch(console.error);
-    };
-  }, [adUnitId]);
 
-  // Only render on Android native platform
-  if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'android') {
+      loadedListener?.remove().catch(() => undefined);
+      failedListener?.remove().catch(() => undefined);
+      AdMob.hideBanner().catch(() => undefined);
+    };
+  }, [adUnitId, useTestAds]);
+
+  if (!isAndroidNative()) {
     return null;
   }
 
   return (
     <div className={`admob-native-ad-container ${className}`}>
-      {/* This container provides spacing - the actual banner ad is overlaid by Capacitor */}
       {!adLoaded && !adError && (
         <div className="ad-loading">
           <div className="ad-loading-spinner"></div>
         </div>
       )}
-      {adError && (
-        <div className="ad-error">
-          {/* Silently fail - don't show error to users */}
-        </div>
-      )}
-      {/* Banner ad will appear as an overlay at the TOP_CENTER position */}
-      {adLoaded && (
-        <div className="ad-loaded-indicator">
-          {/* Ad is displaying - this space is reserved */}
-        </div>
-      )}
+      {adError && <div className="ad-error" />}
+      {adLoaded && <div className="ad-loaded-indicator" />}
     </div>
   );
 };
 
 export default AdMobNativeAd;
-

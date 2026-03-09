@@ -49,6 +49,16 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.focus-mode-btn.active {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 0.85), rgba(100, 200, 255, 0.85));
+  color: #09111f;
+  box-shadow: 0 0 0 2px rgba(78, 205, 196, 0.35);
+}
+
+.focus-mode-btn.active:hover {
+  background: linear-gradient(135deg, rgba(78, 205, 196, 1), rgba(100, 200, 255, 1));
+}
+
 .playback-info {
   flex: 1;
   display: flex;
@@ -462,4 +472,3 @@
   margin: 0 auto;
   width: 100%;
 }
-

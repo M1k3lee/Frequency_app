@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { X, Play, Pause, Info, Volume2, Square } from 'lucide-react';
+import { X, Play, Pause, Info, Volume2, Square, Layers, Activity } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { getFrequenciesByTag } from '../data/frequencies';
 import { Frequency } from '../types';
 import { audioEngine } from '../audio/AudioEngine';
+import { getGatewayConfig } from '../audio/gateway/GatewaySignalConfig';
 import './GatewayMode.css';
 
 const GatewayMode: React.FC = () => {
@@ -19,6 +20,7 @@ const GatewayMode: React.FC = () => {
   } = useAppStore();
   const gatewayFrequencies = getFrequenciesByTag('gateway');
   const [selectedFreq, setSelectedFreq] = useState<Frequency | null>(null);
+  const [showLabView, setShowLabView] = useState(false);
 
   // Check if a frequency is currently playing
   const isFrequencyPlaying = (frequencyId: string): boolean => {
@@ -39,6 +41,10 @@ const GatewayMode: React.FC = () => {
   };
 
   const currentPlayingFreq = getCurrentPlayingFrequency();
+  const currentGatewayConfig = React.useMemo(() => {
+    if (!currentPlayingFreq) return null;
+    return getGatewayConfig(currentPlayingFreq.id);
+  }, [currentPlayingFreq]);
 
   const handlePlayFrequency = async (freqId: string, e?: React.MouseEvent) => {
     // Prevent event propagation to avoid closing the modal
@@ -69,7 +75,7 @@ const GatewayMode: React.FC = () => {
         
         // The addFrequency function will handle audio context resume via ensureInitialized
         // Just call addFrequency - it will handle everything
-        await addFrequency(freq);
+        await addFrequency(freq, 0.7, 0, { source: 'Gateway Session' });
         setPlaying(true);
         console.log('Gateway: Frequency added successfully');
       } catch (error) {
@@ -120,6 +126,18 @@ const GatewayMode: React.FC = () => {
                 <span className="gateway-volume-value">{Math.round(masterVolume * 100)}%</span>
               </div>
               <button
+                className={`gateway-lab-btn ${showLabView ? 'active' : ''}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowLabView(!showLabView);
+                }}
+                aria-label={showLabView ? 'Hide gateway lab view' : 'Show gateway lab view'}
+                title={showLabView ? 'Hide Gateway Lab' : 'Show Gateway Lab'}
+              >
+                <Layers size={16} />
+                <span>Lab</span>
+              </button>
+              <button
                 className="gateway-pause-btn"
                 onClick={async (e) => {
                   e.stopPropagation();
@@ -141,7 +159,7 @@ const GatewayMode: React.FC = () => {
                         if (!audioEngine.isReadyForPlayback()) {
                           await audioEngine.initialize();
                         }
-                        await addFrequency(currentPlayingFreq);
+                        await addFrequency(currentPlayingFreq, 0.7, 0, { source: 'Gateway Resume' });
                         setPlaying(true);
                       } catch (error) {
                         console.error('Gateway: Error resuming frequency:', error);
@@ -171,6 +189,67 @@ const GatewayMode: React.FC = () => {
         <div className="gateway-intro">
           <p>Explore reconstructed multi-layer frequencies inspired by the Monroe Institute's Gateway Project. These signals are our reconstruction based on declassified documents describing the experiments. While we use multi-layer audio techniques (multiple carrier frequencies, isochronic tones, phase relationships), the exact proprietary Hemi-Sync specifications are not publicly available.</p>
         </div>
+
+        {showLabView && currentGatewayConfig && (
+          <div className="gateway-lab-panel">
+            <div className="gateway-lab-header">
+              <h3>
+                <Activity size={18} />
+                Gateway Lab View
+              </h3>
+              <span className="lab-target">Target Beat: {currentGatewayConfig.targetBeatFreq} Hz</span>
+            </div>
+
+            <div className="gateway-lab-summary">
+              <div className="lab-stat">
+                <strong>{currentGatewayConfig.carrierLayers.length}</strong>
+                <span>Carrier Layers</span>
+              </div>
+              <div className="lab-stat">
+                <strong>{currentGatewayConfig.isochronicLayers.length}</strong>
+                <span>Isochronic Layers</span>
+              </div>
+              <div className="lab-stat">
+                <strong>{currentGatewayConfig.carrierLayers.length + currentGatewayConfig.isochronicLayers.length}</strong>
+                <span>Total Paths</span>
+              </div>
+            </div>
+
+            <div className="gateway-lab-grid">
+              <div className="lab-section">
+                <h4>Carrier Matrix</h4>
+                {currentGatewayConfig.carrierLayers.map((layer, index) => (
+                  <div key={`carrier-${index}`} className="lab-row">
+                    <div className="lab-row-label">
+                      L{index + 1}: {layer.leftFreq.toFixed(1)} / {layer.rightFreq.toFixed(1)} Hz
+                    </div>
+                    <div className="lab-row-meta">{layer.beatFreq.toFixed(1)} Hz beat</div>
+                    <div className="lab-meter">
+                      <div className="lab-meter-fill" style={{ width: `${Math.round(layer.volume * 100)}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="lab-section">
+                <h4>Isochronic Matrix</h4>
+                {currentGatewayConfig.isochronicLayers.map((layer, index) => (
+                  <div key={`iso-${index}`} className="lab-row">
+                    <div className="lab-row-label">
+                      L{index + 1}: {layer.frequency.toFixed(1)} Hz
+                    </div>
+                    <div className="lab-row-meta">
+                      Pulse {layer.pulseRate.toFixed(1)} Hz • Duty {Math.round(layer.dutyCycle * 100)}%
+                    </div>
+                    <div className="lab-meter">
+                      <div className="lab-meter-fill isochronic" style={{ width: `${Math.round(layer.volume * 100)}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="gateway-frequencies">
           {gatewayFrequencies.map((freq) => (
@@ -281,4 +360,3 @@ const GatewayMode: React.FC = () => {
 };
 
 export default GatewayMode;
-
